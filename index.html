@@ -3,86 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nexus RPG Acil Kurtarma</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+    <title>Nexus Test</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.60.0/phaser.min.js"></script>
     <style>
-        body { margin: 0; background: #000; color: #0f0; overflow: hidden; font-family: monospace; }
-        #ui { position: absolute; top: 10px; left: 10px; z-index: 10; pointer-events: none; }
+        body { margin: 0; background: #000; overflow: hidden; }
+        #status { position: absolute; top: 10px; left: 10px; color: #0f0; font-family: monospace; z-index: 10; }
     </style>
 </head>
 <body>
-    <div id="ui">
-        <div id="status">SİSTEM: BAŞLATILIYOR...</div>
-        <div id="wallet">Cüzdan: Bekleniyor</div>
-        <div id="nxp">NXP: 0</div>
-    </div>
-    <div id="game-container"></div>
+    <div id="status">MOTOR TESTİ: BAŞLADI...</div>
+    <div id="game"></div>
 
     <script>
-        // Supabase Bilgilerin
-        const S_URL = 'https://gdpiehrnpeiauhmaoumi.supabase.co';
-        const S_KEY = 'EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkcGllaHJucGVpYXVobWFvdW1pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEwMDk4MjcsImV4cCI6MjA4NjU4NTgyN30.iJHq9gnoPtBLaRuByLOV8VjesBL9qp1rQs1d4_fYJXM';
-        const supabase = window.supabase.createClient(S_URL, S_KEY);
-
-        const tg = window.Telegram.WebApp;
-        tg.expand();
-        
-        let myId = tg.initDataUnsafe?.user?.id ? "ID-" + tg.initDataUnsafe.user.id : "TEST-" + Math.floor(Math.random()*999);
-        let score = 0;
-
-        document.getElementById('wallet').innerText = "Cüzdan: " + myId;
-
-        // VERİTABANI BAĞLANTISI (Hata alsa da oyunu bozmaz)
-        async function loadData() {
-            try {
-                let { data } = await supabase.from('pilots_test').select('*').eq('wallet_address', myId).single();
-                if (data) {
-                    score = data.total_ni;
-                    document.getElementById('nxp').innerText = "NXP: " + score;
-                    document.getElementById('status').innerText = "SİSTEM: VERİ ÇEKİLDİ";
-                } else {
-                    await supabase.from('pilots_test').insert([{ wallet_address: myId, total_ni: 0 }]);
-                    document.getElementById('status').innerText = "SİSTEM: YENİ KAYIT";
-                }
-            } catch (e) {
-                document.getElementById('status').innerText = "SİSTEM: ÇEVRİMDIŞI MOD";
-            }
-        }
-
-        // OYUN MOTORU
         const config = {
             type: Phaser.AUTO,
             width: window.innerWidth,
             height: window.innerHeight,
-            parent: 'game-container',
-            backgroundColor: '#050505',
+            parent: 'game',
+            backgroundColor: '#111',
             scene: {
                 create: function() {
-                    this.add.text(this.scale.width/2, 50, 'NEXUS RPG ALFA', {fill: '#0f0'}).setOrigin(0.5);
+                    document.getElementById('status').innerText = "MOTOR ÇALIŞIYOR! DOKUN!";
                     
-                    // Oyuncu
-                    this.add.circle(this.scale.width/2, this.scale.height - 80, 20, 0x00ff00);
+                    // Ortaya büyük bir hedef
+                    let box = this.add.rectangle(window.innerWidth/2, window.innerHeight/2, 150, 150, 0x00ff00);
+                    
+                    // Dönme animasyonu
+                    this.tweens.add({
+                        targets: box,
+                        angle: 360,
+                        duration: 3000,
+                        repeat: -1
+                    });
 
-                    // Hedef Canavar
-                    let monster = this.add.rectangle(this.scale.width/2, 200, 80, 80, 0xff0000).setInteractive();
-                    
-                    monster.on('pointerdown', async () => {
-                        score += 10;
-                        document.getElementById('nxp').innerText = "NXP: " + score;
-                        monster.setFillStyle(0xffffff);
-                        setTimeout(() => monster.setFillStyle(0xff0000), 100);
-                        
-                        // Arka planda kaydet
-                        await supabase.from('pilots_test').update({ total_ni: score }).eq('wallet_address', myId);
+                    // Tıklama testi
+                    box.setInteractive();
+                    box.on('pointerdown', () => {
+                        box.setFillStyle(0xff0000);
+                        document.getElementById('status').innerText = "DOKUNUŞ ALINDI!";
+                        setTimeout(() => {
+                            box.setFillStyle(0x00ff00);
+                            document.getElementById('status').innerText = "MOTOR ÇALIŞIYOR!";
+                        }, 500);
                     });
                 }
             }
         };
 
-        new Phaser.Game(config);
-        loadData();
+        try {
+            new Phaser.Game(config);
+        } catch (e) {
+            document.getElementById('status').innerText = "HATA: " + e.message;
+        }
     </script>
 </body>
 </html>
