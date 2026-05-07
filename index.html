@@ -1,60 +1,44 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nexus Test</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.60.0/phaser.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus Pilot Test</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { margin: 0; background: #000; overflow: hidden; }
-        #status { position: absolute; top: 10px; left: 10px; color: #0f0; font-family: monospace; z-index: 10; }
+        body { background: #000; color: #0f0; font-family: monospace; text-align: center; padding-top: 50px; }
+        #target { width: 150px; height: 150px; background: red; margin: 20px auto; border-radius: 10px; cursor: pointer; }
     </style>
 </head>
 <body>
-    <div id="status">MOTOR TESTİ: BAŞLADI...</div>
-    <div id="game"></div>
+    <h3>NEXUS SİSTEM TESTİ</h3>
+    <div id="status">BAĞLANILIYOR...</div>
+    <div id="target"></div>
+    <div id="nxp">NXP: 0</div>
 
     <script>
-        const config = {
-            type: Phaser.AUTO,
-            width: window.innerWidth,
-            height: window.innerHeight,
-            parent: 'game',
-            backgroundColor: '#111',
-            scene: {
-                create: function() {
-                    document.getElementById('status').innerText = "MOTOR ÇALIŞIYOR! DOKUN!";
-                    
-                    // Ortaya büyük bir hedef
-                    let box = this.add.rectangle(window.innerWidth/2, window.innerHeight/2, 150, 150, 0x00ff00);
-                    
-                    // Dönme animasyonu
-                    this.tweens.add({
-                        targets: box,
-                        angle: 360,
-                        duration: 3000,
-                        repeat: -1
-                    });
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        
+        const user = tg.initDataUnsafe?.user;
+        const statusDiv = document.getElementById('status');
+        const nxpDiv = document.getElementById('nxp');
+        const target = document.getElementById('target');
+        
+        let score = 0;
 
-                    // Tıklama testi
-                    box.setInteractive();
-                    box.on('pointerdown', () => {
-                        box.setFillStyle(0xff0000);
-                        document.getElementById('status').innerText = "DOKUNUŞ ALINDI!";
-                        setTimeout(() => {
-                            box.setFillStyle(0x00ff00);
-                            document.getElementById('status').innerText = "MOTOR ÇALIŞIYOR!";
-                        }, 500);
-                    });
-                }
-            }
-        };
-
-        try {
-            new Phaser.Game(config);
-        } catch (e) {
-            document.getElementById('status').innerText = "HATA: " + e.message;
+        if(user) {
+            statusDiv.innerText = "PİLOT: " + (user.username || user.first_name);
+        } else {
+            statusDiv.innerText = "TARAYICI MODU (BOTTA DEĞİLSİN)";
         }
+
+        target.onclick = () => {
+            score += 10;
+            nxpDiv.innerText = "NXP: " + score;
+            target.style.background = "white";
+            setTimeout(() => target.style.background = "red", 100);
+        };
     </script>
 </body>
 </html>
