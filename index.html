@@ -3,145 +3,132 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nexus Intelligence: Human vs AI</title>
+    <title>Nexus Intelligence MMORPG</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
         :root { --neon-green: #0f0; --neon-blue: #00f0ff; --neon-red: #ff003c; --dark-bg: #050505; }
         body { background: var(--dark-bg); color: #fff; font-family: 'Courier New', monospace; margin: 0; overflow: hidden; user-select: none; }
         
-        /* --- EKRAN YÖNETİMİ --- */
-        .screen { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); flex-direction: column; align-items: center; justify-content: center; z-index: 200; text-align: center; overflow-y: auto; padding: 20px 0; }
-        .active { display: flex; }
-
-        /* --- SEÇİM KARTLARI --- */
-        .card { background: #111; border: 1px solid var(--neon-blue); padding: 15px; margin: 10px; width: 85%; border-radius: 10px; cursor: pointer; transition: 0.3s; }
-        .card:hover { background: #222; transform: scale(1.03); border-color: var(--neon-green); }
-        .race-human { border-color: #3498db; box-shadow: 0 0 10px #3498db; }
-        .race-ai { border-color: var(--neon-red); box-shadow: 0 0 10px var(--neon-red); }
-        
-        .card h3 { margin: 0; text-transform: uppercase; letter-spacing: 2px; }
-        .card p { font-size: 11px; color: #aaa; margin: 5px 0 0; }
-
-        /* --- HUD --- */
-        #hud { position: fixed; top: 10px; left: 10px; z-index: 100; display: none; }
-        .bar-container { width: 180px; height: 18px; background: #222; border: 1px solid #444; margin-bottom: 5px; border-radius: 4px; overflow: hidden; position: relative; }
+        /* --- HUD & MENÜ --- */
+        #hud { position: fixed; top: 10px; left: 10px; z-index: 50; }
+        .bar-container { width: 160px; height: 16px; background: #222; border: 1px solid #444; margin-bottom: 4px; border-radius: 3px; position: relative; }
         .bar-fill { height: 100%; transition: width 0.3s; }
-        #hp-bar { background: linear-gradient(90deg, #ff003c, #80001e); width: 100%; }
-        #mp-bar { background: linear-gradient(90deg, #00f0ff, #005f73); width: 100%; }
-        .bar-text { position: absolute; width: 100%; text-align: center; font-size: 9px; line-height: 18px; font-weight: bold; text-shadow: 1px 1px #000; }
+        #hp-bar { background: linear-gradient(90deg, #ff003c, #80001e); }
+        #mp-bar { background: linear-gradient(90deg, #00f0ff, #005f73); }
+        .bar-text { position: absolute; width: 100%; text-align: center; font-size: 9px; line-height: 16px; font-weight: bold; }
         
-        #game-world { display: none; height: 100vh; flex-direction: column; align-items: center; justify-content: center; }
-        #target-mob { width: 130px; height: 130px; border: 2px solid #333; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--neon-red); box-shadow: 0 0 15px rgba(255,0,0,0.3); }
+        #menu-buttons { position: fixed; bottom: 20px; width: 100%; display: flex; justify-content: center; gap: 10px; z-index: 100; }
+        .menu-btn { background: #111; border: 1px solid var(--neon-blue); color: #fff; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-size: 12px; }
+
+        /* --- PANELLER --- */
+        .modal { position: fixed; inset: 20px; background: rgba(5,5,5,0.95); border: 1px solid var(--neon-blue); border-radius: 15px; z-index: 150; display: none; flex-direction: column; padding: 15px; box-shadow: 0 0 20px rgba(0,240,255,0.2); }
+        .modal-header { display: flex; justify-content: space-between; border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 15px; }
+        .close-btn { color: var(--neon-red); cursor: pointer; font-weight: bold; }
+
+        /* STATS */
+        .stat-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-size: 14px; }
+        .stat-btn { background: var(--neon-green); color: #000; border: none; width: 24px; height: 24px; border-radius: 50%; font-weight: bold; cursor: pointer; display: none; }
+
+        /* INVENTORY */
+        .inv-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; justify-items: center; }
+        .inv-slot { width: 60px; height: 60px; background: #111; border: 1px solid #333; border-radius: 5px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 8px; color: #555; }
+        .inv-slot.equipped { border-color: var(--neon-green); color: #fff; }
+
+        .screen { position: fixed; inset: 0; background: #000; z-index: 200; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-    <div id="race-screen" class="screen active">
-        <h2 style="color: #fff; margin-bottom: 30px;">TARAFINI SEÇ PİLOT</h2>
-        <div class="card race-human" onclick="pickRace('Human')">
-            <h3 style="color: #3498db;">HUMAN RESISTANCE</h3>
-            <p>İnsanlığın son kalesi. Özgürlük ve irade!</p>
-        </div>
-        <div class="card race-ai" onclick="pickRace('AI')">
-            <h3 style="color: var(--neon-red);">AI SENTINELS</h3>
-            <p>Nexus'un soğuk mantığı. Verimlilik ve düzen!</p>
-        </div>
-    </div>
-
-    <div id="class-screen" class="screen">
-        <h2 id="class-title" style="color: var(--neon-green);">SINIFINI SEÇ</h2>
-        <div class="card" onclick="pickClass('Slayer')">
-            <h3>SLAYER ⚔️</h3>
-            <p>Yakın Dövüş Ustası. (STR / VIT)</p>
-        </div>
-        <div class="card" onclick="pickClass('Technomancer')">
-            <h3>TECHNOMANCER 🔮</h3>
-            <p>Büyüsel Veri Hasarı. (INT / VIT)</p>
-        </div>
-        <div class="card" onclick="pickClass('Data-Sniper')">
-            <h3>DATA-SNIPER 🏹</h3>
-            <p>Kritik Menzilli Vuruş. (DEX / VIT)</p>
-        </div>
-        <div class="card" onclick="pickClass('Architect')" style="border-color: #f1c40f;">
-            <h3 style="color: #f1c40f;">ARCHITECT 🛠️</h3>
-            <p>Destek ve Şifacı. (INT / VIT)</p>
-        </div>
-    </div>
-
     <div id="hud">
-        <div id="pilot-info" style="font-size: 12px; margin-bottom: 5px;"></div>
-        <div class="bar-container"><div id="hp-bar" class="bar-fill"></div><div class="bar-text">HP: <span id="hp-val">100/100</span></div></div>
-        <div class="bar-container"><div id="mp-bar" class="bar-fill"></div><div class="bar-text">MP: <span id="mp-val">50/50</span></div></div>
-        <div style="font-size: 11px; color: var(--neon-green);">LVL: <span id="lvl">1</span> | NXP: <span id="nxp">0</span></div>
+        <div id="p-name" style="font-size: 11px; margin-bottom: 5px;">Pilot: ...</div>
+        <div class="bar-container"><div id="hp-bar" class="bar-fill"></div><div class="bar-text">HP: <span id="hp-v">100/100</span></div></div>
+        <div class="bar-container"><div id="mp-bar" class="bar-fill"></div><div class="bar-text">MP: <span id="mp-v">50/50</span></div></div>
+        <div style="font-size: 10px; color: var(--neon-green);">LVL: <span id="lvl">1</span> | NXP: <span id="nxp">0</span></div>
     </div>
 
-    <div id="game-world">
-        <div id="target-mob">TARGET</div>
-        <p style="margin-top: 20px; font-size: 12px; color: #444;">NEXUS TERMINAL v1.1 ACTIVE</p>
+    <div id="menu-buttons">
+        <div class="menu-btn" onclick="toggleModal('char-modal')">👤 KARAKTER</div>
+        <div class="menu-btn" onclick="toggleModal('inv-modal')">🎒 ENVANTER</div>
+    </div>
+
+    <div id="char-modal" class="modal">
+        <div class="modal-header"><span>KARAKTER STATLARI</span><span class="close-btn" onclick="toggleModal('char-modal')">X</span></div>
+        <div id="stat-points" style="color: var(--neon-green); margin-bottom: 15px;">Kullanılabilir Puan: 0</div>
+        <div class="stat-row"><span>STR (Güç)</span><span id="v-str">10</span><button class="stat-btn" onclick="addStat('str')">+</button></div>
+        <div class="stat-row"><span>DEX (Çeviklik)</span><span id="v-dex">10</span><button class="stat-btn" onclick="addStat('dex')">+</button></div>
+        <div class="stat-row"><span>INT (Zekâ)</span><span id="v-int">10</span><button class="stat-btn" onclick="addStat('int_stat')">+</button></div>
+        <div class="stat-row"><span>VIT (Dayanıklılık)</span><span id="v-vit">10</span><button class="stat-btn" onclick="addStat('vit')">+</button></div>
+    </div>
+
+    <div id="inv-modal" class="modal">
+        <div class="modal-header"><span>EKİPMAN (8 SLOT)</span><span class="close-btn" onclick="toggleModal('inv-modal')">X</span></div>
+        <div class="inv-grid">
+            <div class="inv-slot" id="slot-head">KAFALIK</div>
+            <div class="inv-slot" id="slot-neck">KOLYE</div>
+            <div class="inv-slot" id="slot-chest">GÖĞÜSLÜK</div>
+            <div class="inv-slot" id="slot-arms">KOLLUK</div>
+            <div class="inv-slot" id="slot-belt">KEMER</div>
+            <div class="inv-slot" id="slot-legs">DONLUK</div>
+            <div class="inv-slot" id="slot-ring1">YÜZÜK 1</div>
+            <div class="inv-slot" id="slot-feet">AYAKLIK</div>
+            <div class="inv-slot" id="slot-ring2">YÜZÜK 2</div>
+        </div>
     </div>
 
     <script>
         const SUPABASE_URL = 'https://gdpiehrnpeiauhmaoumi.supabase.co';
-        const SUPABASE_KEY = 'BURAYA_ANON_KEYİNİ_YAZ'; 
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const SUPABASE_KEY = 'KENDI_ANON_KEYIN'; 
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         const tg = window.Telegram.WebApp;
-        
-        let user = tg.initDataUnsafe?.user;
-        let selectedRace = '';
-        let pData = null;
+
+        let p = null;
 
         async function init() {
-            if (!user) return;
-            const { data } = await supabaseClient.from('pilots_data').select('*').eq('id', user.id).single();
-            if (data) {
-                pData = data;
-                startGame();
+            const { data } = await supabase.from('pilots_data').select('*').eq('id', tg.initDataUnsafe.user.id).single();
+            if (data) { p = data; updateUI(); }
+        }
+
+        function toggleModal(id) {
+            const m = document.getElementById(id);
+            m.style.display = m.style.display === 'flex' ? 'none' : 'flex';
+            updateUI();
+        }
+
+        async function addStat(type) {
+            if (p.stat_points > 0) {
+                p[type]++;
+                p.stat_points--;
+                updateUI();
+                await supabase.from('pilots_data').update({ [type]: p[type], stat_points: p.stat_points }).eq('id', p.id);
             }
         }
 
-        function pickRace(race) {
-            selectedRace = race;
-            document.getElementById('race-screen').classList.remove('active');
-            document.getElementById('class-screen').classList.add('active');
-            document.getElementById('class-title').innerText = race + " SINIFINI SEÇ";
-        }
-
-        async function pickClass(className) {
-            const { data } = await supabaseClient.from('pilots_data').insert({
-                id: user.id,
-                username: user.username || user.first_name,
-                race: selectedRace,
-                class: className,
-                str: className === 'Slayer' ? 15 : 10,
-                int_stat: (className === 'Technomancer' || className === 'Architect') ? 15 : 10,
-                dex: className === 'Data-Sniper' ? 15 : 10,
-                vit: 12
-            }).select().single();
-            
-            pData = data;
-            startGame();
-        }
-
-        function startGame() {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById('hud').style.display = 'block';
-            document.getElementById('game-world').style.display = 'flex';
-            updateUI();
-        }
-
         function updateUI() {
-            const raceColor = pData.race === 'Human' ? '#3498db' : '#ff003c';
-            document.getElementById('pilot-info').innerHTML = `<span style="color:${raceColor}">${pData.race}</span> ${pData.username} [${pData.class}]`;
-            document.getElementById('lvl').innerText = pData.level;
-            document.getElementById('nxp').innerText = pData.nxp;
-        }
+            if (!p) return;
+            document.getElementById('p-name').innerText = `${p.username} | ${p.race} ${p.class}`;
+            document.getElementById('lvl').innerText = p.level;
+            document.getElementById('nxp').innerText = p.nxp;
+            
+            // Statları Yazdır
+            document.getElementById('v-str').innerText = p.str;
+            document.getElementById('v-dex').innerText = p.dex;
+            document.getElementById('v-int').innerText = p.int_stat;
+            document.getElementById('v-vit').innerText = p.vit;
+            document.getElementById('stat-points').innerText = `Kullanılabilir Puan: ${p.stat_points}`;
+            
+            // Puan Varsa Artı Butonlarını Göster
+            const btns = document.querySelectorAll('.stat-btn');
+            btns.forEach(b => b.style.display = p.stat_points > 0 ? 'block' : 'none');
 
-        document.getElementById('target-mob').onclick = async () => {
-            pData.nxp += 10;
-            updateUI();
-            await supabaseClient.from('pilots_data').upsert({ id: pData.id, nxp: pData.nxp });
-        };
+            // Barları Güncelle
+            const maxH = 100 + (p.vit * 20);
+            const maxM = 50 + (p.int_stat * 15);
+            document.getElementById('hp-bar').style.width = "100%";
+            document.getElementById('hp-v').innerText = `${maxH}/${maxH}`;
+            document.getElementById('mp-v').innerText = `${maxM}/${maxM}`;
+        }
 
         init();
     </script>
