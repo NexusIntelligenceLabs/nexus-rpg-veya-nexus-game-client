@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Nexus RPG Test</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+    <style>
+        body { margin: 0; padding: 0; background-color: #1a1a2e; color: #fff; overflow: hidden; font-family: 'Courier New', Courier, monospace; }
+        #game-container { width: 100vw; height: 100vh; }
+        #ui { position: absolute; top: 15px; left: 15px; pointer-events: none; text-shadow: 2px 2px 4px #000; }
+        h3 { margin: 5px 0; color: #4ecca3; }
+        #log { color: #e94560; font-size: 14px; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+    <div id="ui">
+        <h3 id="playerInfo">Cüzdan: Bağlanıyor...</h3>
+        <h3 id="nxpDisplay">NXP: 0</h3>
+        <div id="log">Sisteme giriş yapılıyor...</div>
+    </div>
+
+    <div id="game-container"></div>
+
+    <script>
+        // --- 1. SUPABASE AYARLARI ---
+        const SUPABASE_URL = 'https://gdpiehrnpeiauhmaoumi.supabase.co';
+        const SUPABASE_KEY = 'EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkcGllaHJucGVpYXVobWFvdW1pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEwMDk4MjcsImV4cCI6MjA4NjU4NTgyN30.iJHq9gnoPtBLaRuByLOV8VjesBL9qp1rQs1d4_fYJXM';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // --- 2. TELEGRAM KULLANICI / CÜZDAN SİMÜLASYONU ---
+        const tg = window.Telegram.WebApp;
+        tg.expand(); // Telegram ekranını tam boy yap
+        
+        // Şimdilik test için kullanıcının Telegram ID'sini cüzdan adresi gibi kullanıyoruz
+        let walletAddress = tg.initDataUnsafe?.user?.id ? tg.initDataUnsafe.user.id.toString() : "TEST_WALLET_001";
+        let currentNXP = 0;
+
+        document.getElementById('playerInfo').innerText = "Cüzdan: " + walletAddress;
+
+        // Veritabanından veriyi çek veya yeni kullanıcı oluştur
+        async function initPlayer() {
+            document.getElementById('log').innerText = "Veritabanına bağlanılıyor...";
+            
+            const { data, error } = await supabase
+                .from('pilots_test')
+                .select('*')
+                .eq('wallet_address', walletAddress)
+                .single();
+
+            if (data) {
+                currentNXP = data.total_ni;
+                document.getElementById('nxpDisplay').innerText = "NXP: " + currentNXP;
+                document.getElementById('log').innerText = "Kayıt bulundu. Oyuna hazır!";
+            } else {
+                // Yeni kullanıcıysa tabloya ekle
+                await supabase.from('pilots_test').insert([{ 
+                    wallet_address: walletAddress, 
+                    total_ni: 0, 
+                    balance_ni: 0, 
+                    level: 1, 
+                    xp: 0 
+                }]);
+                document.getElementById('log').innerText = "Yeni hesap açıldı!";
+            }
+        }
+
+        // NXP'yi Supabase'e kaydetme fonksiyonu
+        async function saveNXP(amount) {
+            currentNXP += amount;
+            document.getElementById('nxpDisplay').innerText = "NXP: " + currentNXP;
+            
+            await supabase
+                .from('pilots_test')
+                .update({ total_ni: currentNXP })
+                .eq('wallet_address', walletAddress);
+                
+            document.getElementById('log').innerText = "Kayıt başarılı: +" + amount + " NXP";
+            setTimeout(() => document.getElementById('log').innerText = "", 2000);
+        }
+
+        // --- 3. PHASER 2D OYUN MOTORU (FAZ 1) ---
+        class MainScene extends Phaser.Scene {
+            constructor() { super('MainScene'); }
+
+            preload() {
+                // Dışarıdan görsel yüklemek yerine motorun kendi şekillerini kullanıyoruz (Sıfır kasma)
+            }
+
+            create() {
+                const width = this.scale.width;
+                const height = this.scale.height;
+
+                // Zemin ızgarası (Siber alan hissiyatı)
+                this.add.grid(width/2, height/2, width, height, 40, 40, 0x1a1a2e, 1, 0x4ecca3, 0.2);
+
+                // Ana Karakterimiz (Mavi Daire - Ortada sabit)
+                this.player = this.add.circle(width / 2, height - 100, 25, 0x4ecca3);
+                this.player.setStrokeStyle(4, 0xffffff);
+
+                // İlk Düşman: Zararlı Yazılım (Kırmızı Kare)
+                this.enemyHP = 3; // 3 vuruşta ölür
+                this.spawnEnemy();
+            }
+
+            spawnEnemy() {
+                const width = this.scale.width;
+                const height = this.scale.height;
+
+                // Düşmanı yukarıda rastgele bir yerde oluştur
+                let startX = Phaser.Math.Between(50, width - 50);
+                let startY = 150;
+
+                this.enemy = this.add.rectangle(startX, startY, 50, 50, 0xe94560);
+                this.enemy.setStrokeStyle(3, 0xffffff);
+                this.enemy.setInteractive(); // Tıklanabilir yap
+
+                // Düşman Can Barı Metni
+                this.enemyText = this.add.text(startX, startY - 40, 'HP: ' + this.enemyHP, { fontSize: '16px', fill: '#fff' }).setOrigin(0.5);
+
+                // Tıklama (Vuruş) Olayı
+                this.enemy.on('pointerdown', () => {
+                    this.hitEnemy();
+                });
+
+                // Basit bir aşağı yukarı sallanma animasyonu
+                this.tweens.add({
+                    targets: [this.enemy, this.enemyText],
+                    y: '+=20',
+                    yoyo: true,
+                    repeat: -1,
+                    duration: 1000
+                });
+            }
+
+            hitEnemy() {
+                this.enemyHP -= 1;
+                this.enemyText.setText('HP: ' + this.enemyHP);
+
+                // Vuruş efekti (Kırmızıdan beyaza parlama)
+                this.enemy.setFillStyle(0xffffff);
+                this.time.delayedCall(100, () => {
+                    if(this.enemy) this.enemy.setFillStyle(0xe94560);
+                });
+
+                // Düşman ölürse
+                if (this.enemyHP <= 0) {
+                    this.enemy.destroy();
+                    this.enemyText.destroy();
+                    
+                    // Supabase'e 10 NXP ekle
+                    saveNXP(10); 
+
+                    // 1 saniye sonra yeni düşman gelsin
+                    this.time.delayedCall(1000, () => {
+                        this.enemyHP = 3; // Canı yenile
+                        this.spawnEnemy();
+                    });
+                }
+            }
+        }
+
+        const config = {
+            type: Phaser.AUTO,
+            width: window.innerWidth,
+            height: window.innerHeight,
+            parent: 'game-container',
+            scene: [MainScene]
+        };
+
+        const game = new Phaser.Game(config);
+
+        // Pencere boyutu değişirse oyunu da ölçekle
+        window.addEventListener('resize', () => {
+            game.scale.resize(window.innerWidth, window.innerHeight);
+        });
+
+        // Veritabanını başlat
+        initPlayer();
+
+    </script>
+</body>
+</html>
