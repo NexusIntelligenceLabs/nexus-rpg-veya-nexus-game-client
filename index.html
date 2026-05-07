@@ -3,98 +3,86 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nexus RPG Kararlı</title>
+    <title>Nexus RPG Acil Kurtarma</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
     <style>
-        body { margin: 0; background: #1a1a2e; color: #4ecca3; overflow: hidden; font-family: sans-serif; }
+        body { margin: 0; background: #000; color: #0f0; overflow: hidden; font-family: monospace; }
         #ui { position: absolute; top: 10px; left: 10px; z-index: 10; pointer-events: none; }
-        .stat { font-size: 16px; font-weight: bold; margin-bottom: 5px; text-shadow: 1px 1px 2px #000; }
-        #debug { color: #ff4d4d; font-size: 12px; }
     </style>
 </head>
 <body>
     <div id="ui">
-        <div id="wallet" class="stat">Cüzdan: Aranıyor...</div>
-        <div id="nxp" class="stat">NXP: 0</div>
-        <div id="debug">Sistem başlatılıyor...</div>
+        <div id="status">SİSTEM: BAŞLATILIYOR...</div>
+        <div id="wallet">Cüzdan: Bekleniyor</div>
+        <div id="nxp">NXP: 0</div>
     </div>
     <div id="game-container"></div>
 
     <script>
-        const SUPABASE_URL = 'https://gdpiehrnpeiauhmaoumi.supabase.co';
-        const SUPABASE_KEY = 'EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkcGllaHJucGVpYXVobWFvdW1pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEwMDk4MjcsImV4cCI6MjA4NjU4NTgyN30.iJHq9gnoPtBLaRuByLOV8VjesBL9qp1rQs1d4_fYJXM';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        // Supabase Bilgilerin
+        const S_URL = 'https://gdpiehrnpeiauhmaoumi.supabase.co';
+        const S_KEY = 'EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkcGllaHJucGVpYXVobWFvdW1pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEwMDk4MjcsImV4cCI6MjA4NjU4NTgyN30.iJHq9gnoPtBLaRuByLOV8VjesBL9qp1rQs1d4_fYJXM';
+        const supabase = window.supabase.createClient(S_URL, S_KEY);
 
         const tg = window.Telegram.WebApp;
         tg.expand();
+        
+        let myId = tg.initDataUnsafe?.user?.id ? "ID-" + tg.initDataUnsafe.user.id : "TEST-" + Math.floor(Math.random()*999);
+        let score = 0;
 
-        let wallet = tg.initDataUnsafe?.user?.id ? "TG-" + tg.initDataUnsafe.user.id : "MISAFIR-" + Math.floor(Math.random() * 1000);
-        let npxScore = 0;
+        document.getElementById('wallet').innerText = "Cüzdan: " + myId;
 
-        document.getElementById('wallet').innerText = "Cüzdan: " + wallet;
-
-        async function startApp() {
+        // VERİTABANI BAĞLANTISI (Hata alsa da oyunu bozmaz)
+        async function loadData() {
             try {
-                let { data, error } = await supabase.from('pilots_test').select('*').eq('wallet_address', wallet).single();
-                
-                if (error && error.code !== 'PGRST116') throw error;
-
-                if (!data) {
-                    await supabase.from('pilots_test').insert([{ wallet_address: wallet, total_ni: 0 }]);
-                    document.getElementById('debug').innerText = "Yeni hesap oluşturuldu!";
+                let { data } = await supabase.from('pilots_test').select('*').eq('wallet_address', myId).single();
+                if (data) {
+                    score = data.total_ni;
+                    document.getElementById('nxp').innerText = "NXP: " + score;
+                    document.getElementById('status').innerText = "SİSTEM: VERİ ÇEKİLDİ";
                 } else {
-                    npxScore = data.total_ni;
-                    document.getElementById('nxp').innerText = "NXP: " + npxScore;
-                    document.getElementById('debug').innerText = "Bağlantı başarılı!";
+                    await supabase.from('pilots_test').insert([{ wallet_address: myId, total_ni: 0 }]);
+                    document.getElementById('status').innerText = "SİSTEM: YENİ KAYIT";
                 }
-            } catch (err) {
-                document.getElementById('debug').innerText = "Hata: RLS veya Bağlantı sorunu.";
-                console.error(err);
+            } catch (e) {
+                document.getElementById('status').innerText = "SİSTEM: ÇEVRİMDIŞI MOD";
             }
         }
 
-        async function updateNXP(add) {
-            npxScore += add;
-            document.getElementById('nxp').innerText = "NXP: " + npxScore;
-            await supabase.from('pilots_test').update({ total_ni: npxScore }).eq('wallet_address', wallet);
-        }
-
-        class GameScene extends Phaser.Scene {
-            constructor() { super('GameScene'); }
-            create() {
-                const { width, height } = this.scale;
-                this.add.grid(width/2, height/2, width, height, 50, 50, 0x1a1a2e, 1, 0x4ecca3, 0.1);
-                
-                this.player = this.add.circle(width/2, height - 100, 30, 0x4ecca3).setStrokeStyle(4, 0xffffff);
-                
-                this.spawnMonster();
-            }
-
-            spawnMonster() {
-                const x = Phaser.Math.Between(50, this.scale.width - 50);
-                const monster = this.add.rectangle(x, 200, 60, 60, 0xff4d4d).setInteractive();
-                const hpText = this.add.text(x, 130, 'BÖCEK', { fontSize: '18px', color: '#fff' }).setOrigin(0.5);
-                
-                monster.on('pointerdown', () => {
-                    monster.destroy();
-                    hpText.destroy();
-                    updateNXP(10);
-                    this.time.delayedCall(1000, () => this.spawnMonster());
-                });
-            }
-        }
-
-        new Phaser.Game({
+        // OYUN MOTORU
+        const config = {
             type: Phaser.AUTO,
             width: window.innerWidth,
             height: window.innerHeight,
             parent: 'game-container',
-            scene: GameScene
-        });
+            backgroundColor: '#050505',
+            scene: {
+                create: function() {
+                    this.add.text(this.scale.width/2, 50, 'NEXUS RPG ALFA', {fill: '#0f0'}).setOrigin(0.5);
+                    
+                    // Oyuncu
+                    this.add.circle(this.scale.width/2, this.scale.height - 80, 20, 0x00ff00);
 
-        startApp();
+                    // Hedef Canavar
+                    let monster = this.add.rectangle(this.scale.width/2, 200, 80, 80, 0xff0000).setInteractive();
+                    
+                    monster.on('pointerdown', async () => {
+                        score += 10;
+                        document.getElementById('nxp').innerText = "NXP: " + score;
+                        monster.setFillStyle(0xffffff);
+                        setTimeout(() => monster.setFillStyle(0xff0000), 100);
+                        
+                        // Arka planda kaydet
+                        await supabase.from('pilots_test').update({ total_ni: score }).eq('wallet_address', myId);
+                    });
+                }
+            }
+        };
+
+        new Phaser.Game(config);
+        loadData();
     </script>
 </body>
 </html>
