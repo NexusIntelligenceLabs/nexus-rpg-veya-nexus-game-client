@@ -1,109 +1,169 @@
 <!DOCTYPE html>
-<html>
+<html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nexus Intelligence - Pilot System</title>
+    <title>Nexus Intelligence MMORPG</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
-        body { background: #000; color: #0f0; font-family: 'Courier New', monospace; text-align: center; margin: 0; overflow: hidden; }
-        #game-container { padding-top: 50px; }
-        #status { font-size: 14px; margin-bottom: 20px; color: #55ff55; }
-        #target { 
-            width: 150px; height: 150px; background: red; margin: 20px auto; 
-            border: 3px solid #fff; border-radius: 15px; cursor: pointer;
-            box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
-            transition: transform 0.1s;
-        }
-        #target:active { transform: scale(0.9); }
-        #nxp-display { font-size: 24px; font-weight: bold; margin-top: 20px; text-shadow: 0 0 10px #0f0; }
-        .loading { color: orange; }
+        :root { --neon-green: #0f0; --neon-blue: #00f0ff; --neon-red: #ff003c; --dark-bg: #050505; }
+        body { background: var(--dark-bg); color: #fff; font-family: 'Courier New', monospace; margin: 0; overflow: hidden; user-select: none; }
+        
+        /* --- ARAYÜZ (HUD) --- */
+        #hud { position: fixed; top: 10px; left: 10px; z-index: 100; display: none; }
+        .bar-container { width: 200px; height: 20px; background: #222; border: 1px solid #444; margin-bottom: 5px; border-radius: 5px; overflow: hidden; position: relative; }
+        .bar-fill { height: 100%; transition: width 0.3s; }
+        #hp-bar { background: linear-gradient(90deg, #ff003c, #80001e); width: 100%; }
+        #mp-bar { background: linear-gradient(90deg, #00f0ff, #005f73); width: 100%; }
+        .bar-text { position: absolute; width: 100%; text-align: center; font-size: 10px; line-height: 20px; font-weight: bold; text-shadow: 1px 1px #000; }
+        
+        #stats-mini { font-size: 12px; color: var(--neon-green); margin-top: 5px; }
+
+        /* --- SEÇİM EKRANI --- */
+        #selection-screen { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 200; text-align: center; }
+        .class-card { background: #111; border: 1px solid var(--neon-blue); padding: 15px; margin: 10px; width: 80%; border-radius: 10px; cursor: pointer; transition: 0.3s; }
+        .class-card:hover { background: #222; transform: scale(1.05); border-color: var(--neon-green); }
+        .class-card h3 { margin: 0; color: var(--neon-blue); }
+        .class-card p { font-size: 11px; color: #aaa; }
+
+        /* --- OYUN ALANI --- */
+        #game-world { display: none; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        #target-mob { width: 120px; height: 120px; background: url('https://via.placeholder.com/120/ff003c/ffffff?text=MOB') no-repeat center; background-size: contain; filter: drop-shadow(0 0 10px red); cursor: pointer; }
+        #target-mob:active { transform: scale(0.9); }
+        
+        .floating-text { position: absolute; color: var(--neon-green); font-weight: bold; animation: floatUp 1s forwards; pointer-events: none; }
+        @keyframes floatUp { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-50px); } }
     </style>
 </head>
 <body>
 
-    <div id="game-container">
-        <div id="status">SİSTEM BAŞLATILIYOR...</div>
-        <div id="target"></div>
-        <div id="nxp-display">NXP: 0</div>
+    <div id="selection-screen">
+        <h2 style="color: var(--neon-green);">SINIFINI SEÇ PİLOT</h2>
+        <div class="class-card" onclick="registerClass('Slayer')">
+            <h3>SLAYER ⚔️</h3>
+            <p>Yüksek HP, Yakın Dövüş. (STR / VIT odaklı)</p>
+        </div>
+        <div class="class-card" onclick="registerClass('Technomancer')">
+            <h3>TECHNOMANCER 🔮</h3>
+            <p>Yüksek Mana, Alan Hasarı. (INT odaklı)</p>
+        </div>
+        <div class="class-card" onclick="registerClass('Data-Sniper')">
+            <h3>DATA-SNIPER 🏹</h3>
+            <p>Kritik Hasar, Menzilli. (DEX odaklı)</p>
+        </div>
+    </div>
+
+    <div id="hud">
+        <div id="pilot-name" style="font-weight: bold; margin-bottom: 5px;">Pilot: ...</div>
+        <div class="bar-container">
+            <div id="hp-bar" class="bar-fill"></div>
+            <div class="bar-text">HP: <span id="hp-val">100/100</span></div>
+        </div>
+        <div class="bar-container">
+            <div id="mp-bar" class="bar-fill"></div>
+            <div class="bar-text">MP: <span id="mp-val">50/50</span></div>
+        </div>
+        <div id="stats-mini">LVL: <span id="lvl">1</span> | NXP: <span id="nxp">0</span></div>
+    </div>
+
+    <div id="game-world">
+        <div id="target-mob"></div>
+        <p style="font-size: 10px; color: #555; margin-top: 20px;">SİSTEME BAĞLI: NEXUS CORE v1.0</p>
     </div>
 
     <script>
-        // --- AYARLAR ---
         const SUPABASE_URL = 'https://gdpiehrnpeiauhmaoumi.supabase.co';
-        const SUPABASE_KEY = 'EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkcGllaHJucGVpYXVobWFvdW1pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEwMDk4MjcsImV4cCI6MjA4NjU4NTgyN30.iJHq9gnoPtBLaRuByLOV8VjesBL9qp1rQs1d4_fYJXM';
+        const SUPABASE_KEY = 'BURAYA_KENDİ_ANON_KEYİNİ_YAZ'; 
         
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         const tg = window.Telegram.WebApp;
         tg.expand();
 
         const user = tg.initDataUnsafe?.user;
-        const statusDiv = document.getElementById('status');
-        const nxpDiv = document.getElementById('nxp-display');
-        const target = document.getElementById('target');
+        let pData = null;
 
-        let score = 0;
-        let isSaving = false;
-
-        // 1. VERİLERİ YÜKLE
-        async function initSystem() {
-            if (!user) {
-                statusDiv.innerText = "HATA: TELEGRAM BAĞLANTISI YOK";
-                return;
-            }
-
-            statusDiv.innerHTML = `<span class="loading">VERİLER ÇEKİLİYOR: ${user.first_name}...</span>`;
-
+        // 1. SİSTEMİ BAŞLAT
+        async function init() {
+            if (!user) return;
+            
             const { data, error } = await supabaseClient
-                .from('pilots_test')
-                .select('nxp')
+                .from('pilots_data')
+                .select('*')
                 .eq('id', user.id)
                 .single();
 
             if (data) {
-                score = data.nxp;
-                nxpDiv.innerText = "NXP: " + score;
-                statusDiv.innerText = "SİSTEM AKTİF: " + user.first_name;
+                pData = data;
+                showGame();
             } else {
-                // Yeni kullanıcı kaydı
-                await supabaseClient.from('pilots_test').insert({ 
-                    id: user.id, 
-                    username: user.username || user.first_name, 
-                    nxp: 0 
-                });
-                statusDiv.innerText = "YENİ PİLOT KAYDI YAPILDI";
+                document.getElementById('selection-screen').style.display = 'flex';
             }
         }
 
-        // 2. PUAN KAYDET
-        async function syncData() {
-            if (isSaving || !user) return;
-            isSaving = true;
-            
-            await supabaseClient.from('pilots_test').upsert({ 
-                id: user.id, 
-                username: user.username || user.first_name, 
-                nxp: score 
-            });
-            
-            isSaving = false;
+        // 2. KAYIT OL (SINIF SEÇİMİ)
+        async function registerClass(className) {
+            const { data, error } = await supabaseClient.from('pilots_data').insert({
+                id: user.id,
+                username: user.username || user.first_name,
+                class: className,
+                level: 1,
+                exp: 0,
+                nxp: 0,
+                str: className === 'Slayer' ? 15 : 10,
+                int_stat: className === 'Technomancer' ? 15 : 10,
+                dex: className === 'Data-Sniper' ? 15 : 10,
+                vit: 12
+            }).select().single();
+
+            if (data) {
+                pData = data;
+                showGame();
+            }
         }
 
-        // 3. TIKLAMA OLAYI
-        target.onclick = () => {
-            score += 10;
-            nxpDiv.innerText = "NXP: " + score;
+        // 3. OYUNU GÖSTER
+        function showGame() {
+            document.getElementById('selection-screen').style.display = 'none';
+            document.getElementById('hud').style.display = 'block';
+            document.getElementById('game-world').style.display = 'flex';
+            updateUI();
+        }
+
+        function updateUI() {
+            document.getElementById('pilot-name').innerText = pData.username + " (" + pData.class + ")";
+            document.getElementById('lvl').innerText = pData.level;
+            document.getElementById('nxp').innerText = pData.nxp;
+            // Basit HP/MP hesabı
+            const maxHp = 100 + (pData.vit * 20);
+            const maxMp = 50 + (pData.int_stat * 15);
+            document.getElementById('hp-val').innerText = `${maxHp}/${maxHp}`;
+            document.getElementById('mp-val').innerText = `${maxMp}/${maxMp}`;
+        }
+
+        // 4. VURUŞ MEKANİĞİ (XP KAZANMA)
+        document.getElementById('target-mob').onclick = async (e) => {
+            pData.nxp += 10;
+            pData.exp += 50;
             
-            // Görsel efekt
-            target.style.background = "white";
-            setTimeout(() => target.style.background = "red", 50);
+            // Yüzen yazı efekti
+            const fText = document.createElement('div');
+            fText.className = 'floating-text';
+            fText.innerText = "+10 NXP";
+            fText.style.left = e.clientX + "px";
+            fText.style.top = e.clientY + "px";
+            document.body.appendChild(fText);
+            setTimeout(() => fText.remove(), 1000);
+
+            updateUI();
             
-            // Her tıklamada kaydet (veya istersen 5 tıkta bir yapabilirsin)
-            syncData();
+            // Veritabanına sinsi kayıt
+            await supabaseClient.from('pilots_data').upsert({ 
+                id: pData.id, nxp: pData.nxp, exp: pData.exp 
+            });
         };
 
-        initSystem();
+        init();
     </script>
 </body>
 </html>
