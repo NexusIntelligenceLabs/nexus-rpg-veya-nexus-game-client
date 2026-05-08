@@ -7,78 +7,120 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
-        :root { --neon-green: #0f0; --neon-blue: #00f0ff; --neon-red: #ff003c; --dark-bg: #050505; --gold: #ffd700; }
-        body { background: var(--dark-bg); color: #fff; font-family: 'Courier New', monospace; margin: 0; overflow: hidden; user-select: none; }
+        :root { --neon-green: #0f0; --neon-blue: #00f0ff; --neon-red: #ff003c; --dark-bg: #050505; --gold: #ffd700; --shadow: 0 0 15px rgba(0, 240, 255, 0.4); }
+        body { background: var(--dark-bg); color: #fff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; overflow: hidden; user-select: none; }
         
-        .screen { position: fixed; inset: 0; background: #000; z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; }
+        /* Ekran Tasarımları */
+        .screen { position: fixed; inset: 0; background: radial-gradient(circle, #111 0%, #000 100%); z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; }
         .hidden { display: none !important; }
         
-        #hud { position: fixed; top: 10px; left: 10px; z-index: 100; display: none; background: rgba(0,0,0,0.9); padding: 10px; border-radius: 8px; border: 1px solid var(--neon-blue); }
-        .bar-container { width: 160px; height: 16px; background: #222; border: 1px solid #444; margin-bottom: 5px; border-radius: 3px; position: relative; overflow: hidden; }
+        h2 { color: var(--neon-blue); text-transform: uppercase; letter-spacing: 3px; text-shadow: var(--shadow); margin-bottom: 30px; }
+        .card { background: rgba(20,20,20,0.8); border: 1px solid #333; padding: 20px; margin: 10px; width: 85%; border-radius: 12px; cursor: pointer; transition: 0.3s; color: var(--neon-green); font-weight: bold; text-shadow: 0 0 5px var(--neon-green); }
+        .card:active { transform: scale(0.95); border-color: var(--neon-green); box-shadow: 0 0 20px var(--neon-green); }
+
+        /* HUD */
+        #hud { position: fixed; top: 10px; left: 10px; z-index: 100; display: none; background: rgba(0,0,0,0.85); padding: 12px; border-radius: 10px; border: 1px solid var(--neon-blue); box-shadow: var(--shadow); }
+        .bar-container { width: 170px; height: 16px; background: #222; border: 1px solid #444; margin-bottom: 6px; border-radius: 4px; position: relative; overflow: hidden; }
         .bar-fill { height: 100%; width: 100%; transition: width 0.3s; }
         #hp-bar { background: linear-gradient(90deg, #ff003c, #80001e); }
         #mp-bar { background: linear-gradient(90deg, #00f0ff, #005f73); }
         .bar-text { position: absolute; width: 100%; text-align: center; font-size: 10px; line-height: 16px; font-weight: bold; top: 0; left: 0; text-shadow: 1px 1px 0 #000; }
 
-        #game-world { height: 100vh; display: none; flex-direction: column; align-items: center; justify-content: center; position: relative; }
-        #target-mob { width: 150px; height: 150px; border: 3px solid var(--neon-red); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--neon-red); font-weight: bold; cursor: pointer; background: radial-gradient(circle, rgba(255,0,60,0.2) 0%, transparent 70%); box-shadow: 0 0 20px rgba(255,0,60,0.3); }
-        #loot-box { width: 100px; height: 100px; border: 2px solid var(--gold); background: rgba(255, 215, 0, 0.2); display: none; align-items: center; justify-content: center; cursor: pointer; animation: pulse 1s infinite; color: var(--gold); }
+        /* Oyun Dünyası */
+        #game-world { height: 100vh; display: none; flex-direction: column; align-items: center; justify-content: center; position: relative; background: url('https://www.transparenttextures.com/patterns/carbon-fibre.png'); }
+        #target-mob { width: 160px; height: 160px; border: 3px solid var(--neon-red); border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; background: radial-gradient(circle, rgba(255,0,60,0.15) 0%, transparent 75%); box-shadow: 0 0 25px rgba(255,0,60,0.4); transition: 0.1s; }
+        #target-mob:active { transform: scale(0.9); background: rgba(255,0,60,0.3); }
+        #mob-name { color: var(--neon-red); font-weight: bold; font-size: 14px; margin-top: 10px; text-shadow: 0 0 10px var(--neon-red); }
         
-        #menu { position: fixed; bottom: 20px; width: 100%; display: none; justify-content: center; gap: 10px; z-index: 500; }
-        .menu-btn { background: #111; border: 1px solid var(--neon-blue); padding: 10px 20px; border-radius: 5px; color: #fff; font-size: 12px; font-weight: bold; }
+        #loot-box { width: 100px; height: 100px; border: 2px solid var(--gold); background: rgba(255, 215, 0, 0.2); display: none; align-items: center; justify-content: center; cursor: pointer; animation: pulse 1s infinite; color: var(--gold); font-weight: bold; border-radius: 10px; text-shadow: 0 0 10px var(--gold); }
         
-        .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 85%; max-height: 70vh; background: #0a0a0a; border: 2px solid var(--neon-blue); border-radius: 15px; z-index: 2000; display: none; flex-direction: column; padding: 20px; border-radius: 10px; }
-        .stat-row { display: flex; justify-content: space-between; margin-bottom: 15px; border-bottom: 1px solid #222; padding-bottom: 5px; }
-        .plus-btn { background: var(--neon-green); border: none; color: #000; width: 30px; height: 30px; border-radius: 5px; font-weight: bold; }
+        /* Menü */
+        #menu { position: fixed; bottom: 25px; width: 100%; display: none; justify-content: center; gap: 12px; z-index: 500; }
+        .menu-btn { background: #111; border: 1px solid var(--neon-blue); padding: 12px 18px; border-radius: 8px; color: #fff; font-size: 11px; font-weight: bold; text-transform: uppercase; box-shadow: var(--shadow); }
 
-        .floating-text { position: absolute; font-weight: bold; pointer-events: none; animation: floatUp 0.8s forwards; z-index: 1000; font-size: 20px; }
-        @keyframes floatUp { from { opacity:1; transform:translateY(0); } to { opacity:0; transform:translateY(-60px); } }
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        /* Modallar */
+        .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 88%; max-height: 75vh; background: rgba(5,5,5,0.98); border: 2px solid var(--neon-blue); border-radius: 15px; z-index: 2000; display: none; flex-direction: column; padding: 20px; box-shadow: 0 0 40px rgba(0, 240, 255, 0.2); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        
+        .stat-row { display: flex; justify-content: space-between; margin-bottom: 15px; background: rgba(255,255,255,0.03); padding: 10px; border-radius: 8px; }
+        .plus-btn { background: var(--neon-green); border: none; color: #000; width: 32px; height: 32px; border-radius: 6px; font-weight: bold; cursor: pointer; box-shadow: 0 0 10px var(--neon-green); }
+
+        .inv-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .inv-slot { height: 65px; background: #151515; border: 1px solid #333; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 10px; text-align: center; color: #555; }
+        
+        #tab-bag { display: none; grid-template-columns: repeat(5, 1fr); gap: 6px; overflow-y: auto; max-height: 350px; }
+        .bag-slot { height: 48px; background: #111; border: 1px solid #222; border-radius: 5px; font-size: 9px; display: flex; align-items: center; justify-content: center; color: var(--neon-blue); }
+
+        .floating-text { position: absolute; font-weight: bold; pointer-events: none; animation: floatUp 0.8s forwards; z-index: 1000; font-size: 22px; text-shadow: 2px 2px 0 #000; }
+        @keyframes floatUp { from { opacity:1; transform:translateY(0); } to { opacity:0; transform:translateY(-70px); } }
+        @keyframes pulse { 0% { transform: scale(1); box-shadow: 0 0 10px var(--gold); } 50% { transform: scale(1.05); box-shadow: 0 0 25px var(--gold); } 100% { transform: scale(1); box-shadow: 0 0 10px var(--gold); } }
     </style>
 </head>
 <body>
 
     <div id="loading-screen" class="screen">
-        <h2 style="color: var(--neon-blue);">NEXUS CONNECTING...</h2>
-        <p id="status-msg">Veriler senkronize ediliyor...</p>
+        <h2 style="font-size: 14px;">SYS.O_CONNECTING...</h2>
+        <div style="width: 200px; height: 2px; background: #222; position: relative;"><div style="width: 60%; height: 100%; background: var(--neon-blue); box-shadow: 0 0 10px var(--neon-blue);"></div></div>
     </div>
 
     <div id="race-screen" class="screen hidden">
-        <h2 style="color: var(--neon-green);">IRKINI SEÇ</h2>
-        <button onclick="setRace('Human')" style="padding:15px; margin:10px; width:80%;">HUMAN ✊</button>
-        <button onclick="setRace('AI')" style="padding:15px; margin:10px; width:80%;">AI SENTINEL 🤖</button>
+        <h2>IRKINI BELİRLE</h2>
+        <div class="card" onclick="setRace('Human')">HUMAN RESISTANCE ✊</div>
+        <div class="card" onclick="setRace('AI')" style="color: var(--neon-blue); text-shadow: 0 0 5px var(--neon-blue);">AI SENTINELS 🤖</div>
     </div>
 
     <div id="class-screen" class="screen hidden">
-        <h2 style="color: var(--neon-blue);">SINIF SEÇ</h2>
-        <button onclick="finalize('Slayer')" style="padding:10px; margin:5px; width:80%;">⚔️ SLAYER</button>
-        <button onclick="finalize('Technomancer')" style="padding:10px; margin:5px; width:80%;">🔮 TECHNOMANCER</button>
+        <h2>SINIFINI SEÇ</h2>
+        <div class="card" onclick="finalize('Slayer')">⚔️ SLAYER</div>
+        <div class="card" onclick="finalize('Technomancer')">🔮 TECHNOMANCER</div>
+        <div class="card" onclick="finalize('Data-Sniper')">🏹 DATA-SNIPER</div>
+        <div class="card" onclick="finalize('Architect')">🛡️ ARCHITECT</div>
     </div>
 
     <div id="hud">
-        <div id="p-info" style="font-weight:bold; color:var(--neon-blue); margin-bottom:5px;">Pilot: ---</div>
+        <div id="p-info" style="font-size: 12px; font-weight: bold; color: var(--neon-blue); margin-bottom: 8px;">PILOT: BAĞLANIYOR...</div>
         <div class="bar-container"><div id="hp-bar" class="bar-fill"></div><div class="bar-text">HP: <span id="hp-txt">--/--</span></div></div>
         <div class="bar-container"><div id="mp-bar" class="bar-fill"></div><div class="bar-text">MP: <span id="mp-txt">--/--</span></div></div>
-        <div style="font-size:12px; color:var(--neon-green);">LVL: <span id="lvl">1</span> | NXP: <span id="nxp">0</span></div>
+        <div style="font-size: 11px; color: var(--neon-green); margin-top: 5px;">LEVEL: <span id="lvl">1</span> | NXP: <span id="nxp">0</span></div>
     </div>
 
     <div id="game-world">
-        <div id="target-mob">SENTINEL-X</div>
+        <div id="target-mob">
+            <span style="font-size: 40px;">🕷️</span>
+            <span id="mob-name">VOID-SPIDER [LVL 1]</span>
+        </div>
         <div id="loot-box" onclick="collectLoot()">DATA-CUBE</div>
     </div>
 
     <div id="menu">
         <div class="menu-btn" onclick="openModal('char-panel')">👤 STATS</div>
         <div class="menu-btn" onclick="openModal('inv-panel')">🎒 INV</div>
+        <div class="menu-btn" onclick="town()" id="town-btn">🏠 TOWN</div>
     </div>
 
     <div id="char-panel" class="modal">
-        <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
-            <span style="color:var(--neon-blue); font-weight:bold;">KARAKTER</span>
-            <span onclick="closeModals()" style="color:red; cursor:pointer;">[KAPAT]</span>
+        <div class="modal-header">
+            <span style="color:var(--neon-blue); font-weight:bold;">KARAKTER ANALİZİ</span>
+            <span onclick="closeModals()" style="color:var(--neon-red); cursor:pointer;">[KAPAT]</span>
         </div>
-        <div id="stat-pts" style="color:var(--neon-green); margin-bottom:10px; font-weight:bold;">Puan: 0</div>
+        <div id="stat-pts" style="color:var(--neon-green); margin-bottom:15px; font-weight:bold; font-size: 18px;">PUAN: 0</div>
         <div id="stat-content"></div>
+    </div>
+
+    <div id="inv-panel" class="modal">
+        <div class="modal-header">
+            <div style="display:flex; gap:10px; width: 100%;">
+                <button id="btn-equip" onclick="switchInvTab('equip')" style="background:var(--neon-green); flex:1; border:none; padding:10px; border-radius:5px; font-weight:bold;">EQUIP</button>
+                <button id="btn-bag" onclick="switchInvTab('bag')" style="background:#111; color:#fff; flex:1; border:1px solid #333; border-radius:5px; font-weight:bold;">BAG (50)</button>
+                <button onclick="closeModals()" style="background:var(--neon-red); border:none; color:#fff; width:40px; border-radius:5px;">X</button>
+            </div>
+        </div>
+        <div id="tab-equip" class="inv-grid">
+            <div class="inv-slot">HELM</div><div class="inv-slot">NECK</div><div class="inv-slot">BODY</div>
+            <div class="inv-slot">ARMS</div><div class="inv-slot">BELT</div><div class="inv-slot">LEGS</div>
+            <div class="inv-slot">RING 1</div><div class="inv-slot">BOOTS</div><div class="inv-slot">RING 2</div>
+        </div>
+        <div id="tab-bag"></div>
     </div>
 
     <script>
@@ -87,28 +129,26 @@
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         const tg = window.Telegram.WebApp;
 
-        let p = { str:10, dex:10, int_stat:10, vit:10, stat_points:0, level:1, exp:0, nxp:0 }; // Fallback data
+        let p = { str:10, dex:10, int_stat:10, vit:10, stat_points:0, level:1, exp:0, nxp:0, username: 'Pilot' };
         let mobHP = 100;
+        let inventory = [];
+
+        // Bag Slot Üretimi
+        const bagContainer = document.getElementById('tab-bag');
+        for(let i=0; i<50; i++) {
+            let s = document.createElement('div');
+            s.className = 'bag-slot'; s.id = `slot-${i}`; s.innerText = "--";
+            bagContainer.appendChild(s);
+        }
 
         async function init() {
             tg.expand();
-            const user = tg.initDataUnsafe?.user || { id: 12345, username: 'Test_Pilotu' }; // Telegram dışı için test ID
-            
+            const user = tg.initDataUnsafe?.user || { id: 12345, username: 'Test_Pilotu' };
             try {
-                const { data, error } = await supabaseClient.from('pilots_data').select('*').eq('id', user.id).single();
-                
-                if (data) {
-                    p = data;
-                    startGame();
-                } else {
-                    // Kayıt yoksa seçim ekranına
-                    document.getElementById('loading-screen').classList.add('hidden');
-                    document.getElementById('race-screen').classList.remove('hidden');
-                }
-            } catch (err) {
-                document.getElementById('status-msg').innerText = "Bağlantı hatası! Çevrimdışı mod başlatılıyor...";
-                setTimeout(startGame, 1500);
-            }
+                const { data } = await supabaseClient.from('pilots_data').select('*').eq('id', user.id).single();
+                if (data) { p = data; startGame(); } 
+                else { document.getElementById('loading-screen').classList.add('hidden'); document.getElementById('race-screen').classList.remove('hidden'); }
+            } catch (err) { startGame(); }
         }
 
         window.setRace = (r) => { p.race = r; document.getElementById('race-screen').classList.add('hidden'); document.getElementById('class-screen').classList.remove('hidden'); };
@@ -116,7 +156,6 @@
         window.finalize = async (c) => {
             const user = tg.initDataUnsafe?.user || { id: 12345, username: 'Test_Pilotu' };
             p.class = c; p.id = user.id; p.username = user.username || user.first_name;
-            
             await supabaseClient.from('pilots_data').upsert(p);
             startGame();
         };
@@ -130,10 +169,9 @@
         }
 
         document.getElementById('target-mob').onclick = (e) => {
-            const dmg = 5 + (p.str * 1);
+            const dmg = 5 + (p.str * 1.5);
             mobHP -= dmg;
-            spawnText(e.clientX, e.clientY, `-${dmg}`, "var(--neon-red)");
-            
+            spawnText(e.clientX, e.clientY, `-${Math.floor(dmg)}`, "var(--neon-red)");
             if (mobHP <= 0) {
                 document.getElementById('target-mob').style.display = 'none';
                 document.getElementById('loot-box').style.display = 'flex';
@@ -141,54 +179,74 @@
         };
 
         window.collectLoot = async () => {
-            p.nxp += 50; p.exp += 30;
-            const targetExp = 100 * Math.pow(p.level, 2);
-            if (p.exp >= targetExp) { p.level++; p.stat_points += 3; alert("LEVEL UP!"); }
+            p.nxp += 60; p.exp += 40;
+            const targetExp = 150 * Math.pow(p.level, 2);
+            if (p.exp >= targetExp) { p.level++; p.stat_points += 3; alert("SİSTEM GÜNCELLENDİ: LEVEL UP!"); }
             
+            if (Math.random() < 0.4) {
+                let items = ["Siber-Atık", "Enerji Hücresi", "Veri Diski"];
+                let item = items[Math.floor(Math.random() * items.length)];
+                inventory.push(item);
+                updateInventoryUI();
+            }
+
             await supabaseClient.from('pilots_data').update(p).eq('id', p.id);
-            mobHP = 100 + (p.level * 20);
+            mobHP = 100 + (p.level * 30);
             document.getElementById('target-mob').style.display = 'flex';
             document.getElementById('loot-box').style.display = 'none';
             updateUI();
         };
 
         function updateUI() {
-            document.getElementById('p-info').innerText = `${p.username || 'Pilot'} [${p.class || 'N/A'}]`;
+            document.getElementById('p-info').innerText = `${p.username} [${p.race || ''}-${p.class || ''}]`;
             document.getElementById('lvl').innerText = p.level;
             document.getElementById('nxp').innerText = p.nxp;
-            
-            const maxH = 100 + (p.vit * 10);
-            const maxM = 50 + (p.int_stat * 10);
+            const maxH = 100 + (p.vit * 20); const maxM = 50 + (p.int_stat * 15);
             document.getElementById('hp-txt').innerText = `${maxH}/${maxH}`;
             document.getElementById('mp-txt').innerText = `${maxM}/${maxM}`;
-            
-            document.getElementById('stat-pts').innerText = `Puan: ${p.stat_points}`;
+            document.getElementById('hp-bar').style.width = "100%";
+            document.getElementById('mp-bar').style.width = "100%";
+            document.getElementById('stat-pts').innerText = `PUAN: ${p.stat_points}`;
             renderStats();
         }
 
         function renderStats() {
             const cont = document.getElementById('stat-content');
-            cont.innerHTML = `
-                <div class="stat-row"><span>STR: ${p.str}</span>${p.stat_points>0?`<button class="plus-btn" onclick="upStat('str')">+</button>`:''}</div>
-                <div class="stat-row"><span>DEX: ${p.dex}</span>${p.stat_points>0?`<button class="plus-btn" onclick="upStat('dex')">+</button>`:''}</div>
-                <div class="stat-row"><span>INT: ${p.int_stat}</span>${p.stat_points>0?`<button class="plus-btn" onclick="upStat('int_stat')">+</button>`:''}</div>
-                <div class="stat-row"><span>VIT: ${p.vit}</span>${p.stat_points>0?`<button class="plus-btn" onclick="upStat('vit')">+</button>`:''}</div>
-            `;
+            const stats = [{id:'str',n:'STR'},{id:'dex',n:'DEX'},{id:'int_stat',n:'INT'},{id:'vit',n:'VIT'}];
+            cont.innerHTML = stats.map(s => `
+                <div class="stat-row">
+                    <span>${s.n}: <b>${p[s.id]}</b></span>
+                    ${p.stat_points > 0 ? `<button class="plus-btn" onclick="upStat('${s.id}')">+</button>` : ''}
+                </div>
+            `).join('');
         }
 
         window.upStat = async (s) => {
-            if(p.stat_points > 0) {
-                p[s]++; p.stat_points--;
-                updateUI();
-                await supabaseClient.from('pilots_data').update(p).eq('id', p.id);
-            }
+            if(p.stat_points > 0) { p[s]++; p.stat_points--; updateUI(); await supabaseClient.from('pilots_data').update(p).eq('id', p.id); }
         };
 
+        window.town = () => {
+            let btn = document.getElementById('town-btn'); let c = 3;
+            let t = setInterval(() => {
+                btn.innerText = `LINKING... ${c}`; c--;
+                if(c < 0) { clearInterval(t); btn.innerText = "🏠 TOWN"; alert("Nexus Core'a Işınlandın!"); }
+            }, 1000);
+        };
+
+        window.switchInvTab = (t) => {
+            document.getElementById('tab-equip').style.display = t === 'equip' ? 'grid' : 'none';
+            document.getElementById('tab-bag').style.display = t === 'bag' ? 'grid' : 'none';
+            document.getElementById('btn-equip').style.background = t === 'equip' ? 'var(--neon-green)' : '#111';
+            document.getElementById('btn-bag').style.background = t === 'bag' ? 'var(--neon-green)' : '#111';
+        };
+
+        function updateInventoryUI() {
+            inventory.forEach((item, idx) => { if(idx < 50) document.getElementById(`slot-${idx}`).innerText = item; });
+        }
+
         function spawnText(x, y, t, c) {
-            const el = document.createElement('div');
-            el.className = 'floating-text'; el.innerText = t; el.style.color = c;
-            el.style.left = x + 'px'; el.style.top = y + 'px';
-            document.body.appendChild(el);
+            const el = document.createElement('div'); el.className = 'floating-text'; el.innerText = t; el.style.color = c;
+            el.style.left = x + 'px'; el.style.top = y + 'px'; document.body.appendChild(el);
             setTimeout(() => el.remove(), 800);
         }
 
