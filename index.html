@@ -9,57 +9,112 @@
     <style>
         :root { --neon-green: #0f0; --neon-blue: #00f0ff; --neon-red: #ff003c; --dark-bg: #050505; }
         body { background: var(--dark-bg); color: #fff; font-family: 'Courier New', monospace; margin: 0; overflow: hidden; user-select: none; }
+        
+        /* SEÇİM EKRANLARI */
         .screen { position: fixed; inset: 0; background: #000; z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; }
         .hidden { display: none !important; }
-        .card { background: #111; border: 1px solid #333; padding: 15px; margin: 10px; width: 85%; border-radius: 10px; cursor: pointer; }
-        #hud, #game-world, #menu { display: none; }
-        /* Diğer stiller aynı kalabilir... */
-        #hud { position: fixed; top: 10px; left: 10px; z-index: 100; }
-        .bar-container { width: 180px; height: 18px; background: #222; border: 1px solid #444; margin-bottom: 5px; position: relative; }
-        .bar-fill { height: 100%; width: 100%; }
-        #hp-bar { background: red; }
-        #mp-bar { background: blue; }
-        .bar-text { position: absolute; width: 100%; text-align: center; font-size: 10px; line-height: 18px; top: 0; }
-        #game-world { height: 100vh; flex-direction: column; align-items: center; justify-content: center; }
-        #target-mob { width: 120px; height: 120px; border: 2px solid red; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
-        #menu { position: fixed; bottom: 20px; width: 100%; justify-content: center; gap: 10px; }
-        .menu-btn { border: 1px solid cyan; padding: 10px; }
+        .card { background: #111; border: 1px solid #333; padding: 15px; margin: 10px; width: 85%; border-radius: 10px; cursor: pointer; transition: 0.2s; }
+        .card:active { transform: scale(0.95); border-color: var(--neon-green); }
+
+        /* HUD */
+        #hud { position: fixed; top: 10px; left: 10px; z-index: 100; display: none; background: rgba(0,0,0,0.8); padding: 8px; border-radius: 8px; border: 1px solid #333; }
+        .bar-container { width: 160px; height: 16px; background: #222; border: 1px solid #444; margin-bottom: 5px; border-radius: 3px; position: relative; overflow: hidden; }
+        .bar-fill { height: 100%; width: 100%; transition: width 0.3s; }
+        #hp-bar { background: linear-gradient(90deg, #ff003c, #80001e); }
+        #mp-bar { background: linear-gradient(90deg, #00f0ff, #005f73); }
+        .bar-text { position: absolute; width: 100%; text-align: center; font-size: 10px; line-height: 16px; font-weight: bold; top: 0; left: 0; text-shadow: 1px 1px 0 #000; }
+
+        /* OYUN DÜNYASI VE EXP BARI */
+        #game-world { height: 100vh; display: none; flex-direction: column; align-items: center; justify-content: center; position: relative; }
+        #target-mob { width: 140px; height: 140px; border: 2px dashed var(--neon-red); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--neon-red); font-weight: bold; cursor: pointer; background: radial-gradient(circle, rgba(255,0,60,0.2) 0%, transparent 70%); }
+        #target-mob:active { transform: scale(0.95); }
+        
+        #exp-container { width: 80%; height: 8px; background: #222; margin-top: 30px; border-radius: 4px; border: 1px solid #555; position: relative; overflow: hidden; }
+        #exp-bar { height: 100%; background: var(--neon-blue); width: 0%; transition: width 0.3s ease-out; }
+        #exp-text { position: absolute; width: 100%; text-align: center; font-size: 8px; line-height: 8px; margin-top: -12px; color: var(--neon-blue); }
+
+        /* ALT MENÜ VE MODALLAR */
+        #menu { position: fixed; bottom: 20px; width: 100%; display: none; justify-content: center; gap: 15px; z-index: 500; }
+        .menu-btn { background: #111; border: 1px solid var(--neon-blue); padding: 10px 20px; border-radius: 5px; font-size: 12px; cursor: pointer; color: #fff; font-weight: bold; }
+        
+        .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 85%; background: rgba(10,10,10,0.98); border: 2px solid var(--neon-blue); border-radius: 15px; z-index: 2000; display: none; flex-direction: column; padding: 20px; }
+        .stat-row { display: flex; justify-content: space-between; margin-bottom: 15px; align-items: center; font-size: 14px; }
+        .plus-btn { background: var(--neon-green); border: none; color: #000; width: 28px; height: 28px; border-radius: 50%; font-weight: bold; cursor: pointer; display: none; font-size: 16px; }
+        .inv-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .inv-slot { height: 65px; background: #111; border: 1px solid #444; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 9px; color: #666; }
+
+        /* EFEKTLER */
+        .floating-text { position: absolute; color: var(--neon-green); font-weight: bold; pointer-events: none; animation: floatUp 0.8s forwards; font-size: 14px; }
+        @keyframes floatUp { from { opacity:1; transform:translateY(0); } to { opacity:0; transform:translateY(-60px); } }
+        
+        .level-up-anim { position: absolute; top: 30%; color: gold; font-size: 40px; font-weight: bold; text-shadow: 0 0 20px gold; pointer-events: none; animation: popOut 2s forwards; z-index: 3000; display: none; }
+        @keyframes popOut { 0% { transform: scale(0.5); opacity: 0; } 20% { transform: scale(1.2); opacity: 1; } 80% { transform: scale(1); opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
     </style>
 </head>
 <body>
 
     <div id="race-screen" class="screen">
-        <h2>TARAFINI SEÇ</h2>
-        <div class="card" onclick="handleRace('Human')"><h3>HUMAN RESISTANCE</h3></div>
-        <div class="card" onclick="handleRace('AI')"><h3>AI SENTINELS</h3></div>
+        <h2 style="color: var(--neon-green);">IRKINI SEÇ</h2>
+        <div class="card" onclick="setRace('Human')"><h3 style="color:#0f0">HUMAN RESISTANCE ✊</h3></div>
+        <div class="card" onclick="setRace('AI')"><h3 style="color:#00f0ff">AI SENTINELS 🤖</h3></div>
     </div>
 
     <div id="class-screen" class="screen hidden">
-        <h2 id="race-title">SINIF SEÇ</h2>
-        <div class="card" onclick="handleFinal('Slayer')">⚔️ SLAYER</div>
-        <div class="card" onclick="handleFinal('Technomancer')">🔮 TECHNOMANCER</div>
-        <div class="card" onclick="handleFinal('Data-Sniper')">🏹 DATA-SNIPER</div>
-        <div class="card" onclick="handleFinal('Architect')">🛡️ ARCHITECT</div>
+        <h2 id="race-title" style="color: var(--neon-blue);">SINIF SEÇ</h2>
+        <div class="card" onclick="finalize('Slayer')">⚔️ SLAYER (Yakın Dövüş)</div>
+        <div class="card" onclick="finalize('Technomancer')">🔮 TECHNOMANCER (Büyü)</div>
+        <div class="card" onclick="finalize('Data-Sniper')">🏹 DATA-SNIPER (Menzilli)</div>
+        <div class="card" onclick="finalize('Architect')">🛡️ ARCHITECT (Destek)</div>
     </div>
 
     <div id="hud">
-        <div id="p-info">Pilot: ...</div>
-        <div class="bar-container"><div id="hp-bar" class="bar-fill"></div><div class="bar-text">HP</div></div>
-        <div class="bar-container"><div id="mp-bar" class="bar-fill"></div><div class="bar-text">MP</div></div>
+        <div id="p-info" style="font-size: 12px; margin-bottom: 5px; color: var(--neon-blue);">Yükleniyor...</div>
+        <div class="bar-container"><div id="hp-bar" class="bar-fill"></div><div class="bar-text">HP: <span id="hp-txt">100/100</span></div></div>
+        <div class="bar-container"><div id="mp-bar" class="bar-fill"></div><div class="bar-text">MP: <span id="mp-txt">50/50</span></div></div>
+        <div style="font-size: 11px; color: var(--neon-green); margin-top: 5px;">LVL: <span id="lvl">1</span> | NXP: <span id="nxp">0</span></div>
     </div>
+
     <div id="game-world">
-        <div id="target-mob">SENTINEL</div>
+        <div id="level-up-msg" class="level-up-anim">LEVEL UP!</div>
+        <div id="target-mob">SENTINEL-X</div>
+        
+        <div id="exp-container">
+            <div id="exp-text">EXP: 0 / 100</div>
+            <div id="exp-bar"></div>
+        </div>
     </div>
+
     <div id="menu">
-        <div class="menu-btn">STATLAR</div>
-        <div class="menu-btn">ENVANTER</div>
+        <div class="menu-btn" onclick="openModal('char-panel')">👤 STATLAR</div>
+        <div class="menu-btn" onclick="openModal('inv-panel')">🎒 ENVANTER</div>
+    </div>
+
+    <div id="char-panel" class="modal">
+        <div style="display:flex; justify-content:space-between; margin-bottom:15px; border-bottom:1px solid #333; padding-bottom:5px;">
+            <span style="color:var(--neon-blue); font-weight:bold;">KARAKTER STATLARI</span><span style="color:var(--neon-red); cursor:pointer" onclick="closeModals()">[KAPAT]</span>
+        </div>
+        <div id="stat-pts" style="color:var(--neon-green); margin-bottom:15px; font-weight:bold;">Puan: 0</div>
+        <div class="stat-row"><span>STR (Güç)</span><span id="s-str">10</span><button class="plus-btn" onclick="upStat('str')">+</button></div>
+        <div class="stat-row"><span>DEX (Hız)</span><span id="s-dex">10</span><button class="plus-btn" onclick="upStat('dex')">+</button></div>
+        <div class="stat-row"><span>INT (Zekâ)</span><span id="s-int">10</span><button class="plus-btn" onclick="upStat('int_stat')">+</button></div>
+        <div class="stat-row"><span>VIT (Can)</span><span id="s-vit">10</span><button class="plus-btn" onclick="upStat('vit')">+</button></div>
+    </div>
+
+    <div id="inv-panel" class="modal">
+        <div style="display:flex; justify-content:space-between; margin-bottom:15px; border-bottom:1px solid #333; padding-bottom:5px;">
+            <span style="color:var(--neon-blue); font-weight:bold;">ENVANTER (8 SLOT)</span><span style="color:var(--neon-red); cursor:pointer" onclick="closeModals()">[KAPAT]</span>
+        </div>
+        <div class="inv-grid">
+            <div class="inv-slot">KAFALIK</div><div class="inv-slot">KOLYE</div><div class="inv-slot">GÖĞÜS</div>
+            <div class="inv-slot">KOLLUK</div><div class="inv-slot">KEMER</div><div class="inv-slot">DONLUK</div>
+            <div class="inv-slot">YÜZÜK</div><div class="inv-slot">AYAKLIK</div><div class="inv-slot">YÜZÜK</div>
+        </div>
     </div>
 
     <script>
-        
+        // ANAHTARLAR DOĞRUDAN KODA GÖMÜLDÜ - HATA İHTİMALİ SIFIR
         const SUPABASE_URL = 'https://gdpiehrnpeiauhmaoumi.supabase.co';
-        const SUPABASE_KEY = 'EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkcGllaHJucGVpYXVobWFvdW1pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEwMDk4MjcsImV4cCI6MjA4NjU4NTgyN30.iJHq9gnoPtBLaRuByLOV8VjesBL9qp1rQs1d4_fYJXM';
-
+        const SUPABASE_KEY = 'EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkcGllaHJucGVpYXVobWFvdW1pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEwMDk4MjcsImV4cCI6MjA4NjU4NTgyN30.iJHq9gnoPtBLaRuByLOV8VjesBL9qp1rQs1d4_fYJXM'; 
 
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         const tg = window.Telegram.WebApp;
@@ -70,48 +125,31 @@
 
         async function init() {
             const user = tg.initDataUnsafe?.user;
-            if (!user) {
-                alert("Telegram kullanıcı verisi alınamadı!");
-                return;
-            }
+            if (!user) return;
 
             const { data, error } = await supabaseClient.from('pilots_data').select('*').eq('id', user.id).single();
-            if (data) {
-                p = data;
-                startGame();
-            } else {
-                document.getElementById('race-screen').classList.remove('hidden');
-            }
+            if (data) { p = data; startGame(); } 
+            else { document.getElementById('race-screen').classList.remove('hidden'); }
         }
 
-        window.handleRace = function(race) {
-            alert(race + " seçildi, sınıf ekranına geçiliyor..."); // TEŞHİS
+        window.setRace = function(race) {
             selectedRace = race;
             document.getElementById('race-screen').classList.add('hidden');
             document.getElementById('class-screen').classList.remove('hidden');
-            document.getElementById('race-title').innerText = race + " SINIFINI SEÇ";
         };
 
-        window.handleFinal = async function(cls) {
-            alert(cls + " seçildi, veritabanına kaydediliyor..."); // TEŞHİS
+        window.finalize = async function(cls) {
             const user = tg.initDataUnsafe.user;
-            
-            const { data, error } = await supabaseClient.from('pilots_data').insert({
+            const { data, error } = await supabaseClient.from('pilots_data').upsert({
                 id: user.id,
                 username: user.username || user.first_name,
-                class: cls, 
-                race: selectedRace,
+                class: cls, race: selectedRace,
                 level: 1, exp: 0, nxp: 0, stat_points: 0,
                 str: 10, dex: 10, int_stat: 10, vit: 10
-            }).select().single();
+            }, { onConflict: 'id' }).select().single();
             
-            if (error) {
-                alert("Kayıt Hatası: " + error.message); // HATA BURADAYSA SÖYLEYECEK
-                console.error(error);
-            } else {
-                p = data;
-                startGame();
-            }
+            if (error) alert("Sunucu Bağlantı Hatası: " + error.message);
+            else { p = data; startGame(); }
         };
 
         function startGame() {
@@ -120,8 +158,93 @@
             document.getElementById('hud').style.display = 'block';
             document.getElementById('game-world').style.display = 'flex';
             document.getElementById('menu').style.display = 'flex';
-            document.getElementById('p-info').innerText = p.username + " [" + p.race + " " + p.class + "]";
+            updateUI();
         }
+
+        window.openModal = function(id) { closeModals(); document.getElementById(id).style.display = 'flex'; };
+        window.closeModals = function() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); };
+
+        window.upStat = async function(st) {
+            if (p.stat_points > 0) {
+                p[st]++; p.stat_points--; updateUI();
+                await supabaseClient.from('pilots_data').update({ [st]: p[st], stat_points: p.stat_points }).eq('id', p.id);
+            }
+        };
+
+        function getTargetExp() {
+            // Zorlaşan Level Formülü: 100 * (Level ^ 2.5)
+            return Math.floor(100 * Math.pow(p.level, 2.5));
+        }
+
+        function updateUI() {
+            if (!p) return;
+            document.getElementById('p-info').innerText = `[${p.race}] ${p.username} - ${p.class}`;
+            document.getElementById('lvl').innerText = p.level;
+            document.getElementById('nxp').innerText = p.nxp;
+            
+            // Statları Güncelle
+            document.getElementById('s-str').innerText = p.str;
+            document.getElementById('s-dex').innerText = p.dex;
+            document.getElementById('s-int').innerText = p.int_stat;
+            document.getElementById('s-vit').innerText = p.vit;
+            document.getElementById('stat-pts').innerText = `Kullanılabilir Puan: ${p.stat_points}`;
+            document.querySelectorAll('.plus-btn').forEach(b => b.style.display = p.stat_points > 0 ? 'block' : 'none');
+            
+            // HP ve MP Barları
+            const maxH = 100 + (p.vit * 20);
+            const maxM = 50 + (p.int_stat * 15);
+            document.getElementById('hp-txt').innerText = `${maxH}/${maxH}`;
+            document.getElementById('mp-txt').innerText = `${maxM}/${maxM}`;
+            
+            // EXP BARI GÜNCELLEMESİ
+            const targetExp = getTargetExp();
+            const expPercent = Math.min((p.exp / targetExp) * 100, 100);
+            document.getElementById('exp-bar').style.width = expPercent + "%";
+            document.getElementById('exp-text').innerText = `EXP: ${p.exp} / ${targetExp}`;
+        }
+
+        // VURUŞ VE LEVEL UP MEKANİĞİ
+        document.getElementById('target-mob').onclick = async (e) => {
+            const expGain = 25; // Her vuruşta gelen EXP
+            const nxpGain = 10; // Her vuruşta gelen NXP
+            
+            p.nxp += nxpGain;
+            p.exp += expGain;
+            
+            // Yüzen Yazı Efekti
+            const ft = document.createElement('div');
+            ft.className = 'floating-text';
+            ft.innerText = `+${nxpGain} NXP | +${expGain} EXP`;
+            ft.style.left = (e.clientX - 20) + "px"; 
+            ft.style.top = (e.clientY - 20) + "px";
+            document.body.appendChild(ft);
+            setTimeout(() => ft.remove(), 800);
+
+            // LEVEL UP KONTROLÜ
+            let targetExp = getTargetExp();
+            let leveledUp = false;
+
+            while (p.exp >= targetExp) {
+                p.exp -= targetExp; // Artan EXP'yi bir sonraki levele devret
+                p.level++;
+                p.stat_points += 3; // Ödül: 3 Stat Puanı
+                targetExp = getTargetExp();
+                leveledUp = true;
+            }
+
+            if (leveledUp) {
+                const anim = document.getElementById('level-up-msg');
+                anim.style.display = 'block';
+                setTimeout(() => anim.style.display = 'none', 2000); // 2 saniye sonra yazıyı gizle
+            }
+
+            updateUI();
+            
+            // Veritabanına kaydet
+            await supabaseClient.from('pilots_data').upsert({ 
+                id: p.id, nxp: p.nxp, exp: p.exp, level: p.level, stat_points: p.stat_points 
+            });
+        };
 
         init();
     </script>
