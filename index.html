@@ -12,54 +12,48 @@
         :root { --neon-green: #0f0; --neon-blue: #00f0ff; --neon-red: #ff003c; --dark-bg: #050505; --gold: #ffd700; }
         body { background: var(--dark-bg); color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; overflow: hidden; user-select: none; touch-action: none; }
         
+        /* 1. KATMAN: OYUN DÜNYASI */
         #game-container { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; }
-        
-        #joystick-zone { position: fixed; bottom: 50px; left: 20px; width: 120px; height: 120px; z-index: 1000; }
-        #action-bar { position: fixed; bottom: 15px; right: 10px; z-index: 1000; display: flex; align-items: flex-end; gap: 10px; transform: scale(0.95); transform-origin: bottom right; }
-        .skills-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 5px; }
-        .skill-btn { width: 45px; height: 45px; background: rgba(17,17,17,0.85); border: 1px solid var(--neon-blue); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; color: #fff; cursor: pointer; box-shadow: 0 0 8px rgba(0,240,255,0.2); transition: 0.1s; }
-        .skill-btn:active { transform: scale(0.9); background: var(--neon-blue); color: #000; }
-        
-        .attack-btn { width: 70px; height: 70px; background: rgba(255,0,60,0.15); border: 2px solid var(--neon-red); border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; color: var(--neon-red); cursor: pointer; box-shadow: 0 0 15px rgba(255,0,60,0.3); transition: 0.1s; text-shadow: 0 0 5px var(--neon-red); }
-        .attack-btn:active { transform: scale(0.9); background: rgba(255,0,60,0.5); }
 
-        #hud { position: fixed; top: 10px; left: 10px; z-index: 1000; background: rgba(0,0,0,0.85); padding: 10px; border-radius: 8px; border: 1px solid var(--neon-blue); min-width: 160px; pointer-events: none; }
-        .bar-container { width: 100%; height: 14px; background: #222; margin-bottom: 6px; border-radius: 4px; position: relative; border: 1px solid #444; }
+        /* 2. KATMAN: KONTROLLER */
+        #joystick-zone { position: fixed; bottom: 40px; left: 30px; width: 120px; height: 120px; z-index: 1000; }
+        #action-bar { position: fixed; bottom: 20px; right: 20px; z-index: 1000; display: none; flex-direction: column; align-items: flex-end; gap: 10px; }
+        .skills-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+        .skill-btn { width: 45px; height: 45px; background: rgba(17,17,17,0.85); border: 1px solid var(--neon-blue); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; color: #fff; box-shadow: 0 0 8px rgba(0,240,255,0.2); }
+        .attack-btn { width: 80px; height: 80px; background: rgba(255,0,60,0.15); border: 2px solid var(--neon-red); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold; color: var(--neon-red); cursor: pointer; box-shadow: 0 0 15px rgba(255,0,60,0.3); }
+
+        /* 3. KATMAN: HUD VE MODALLAR */
+        #hud { position: fixed; top: 10px; left: 10px; z-index: 2000; background: rgba(0,0,0,0.85); padding: 10px; border-radius: 8px; border: 1px solid var(--neon-blue); min-width: 160px; pointer-events: none; }
+        .bar-container { width: 100%; height: 14px; background: #222; margin-bottom: 6px; border-radius: 4px; position: relative; overflow: hidden; border: 1px solid #444; }
         .bar-fill { height: 100%; width: 100%; transition: width 0.3s; }
         #hp-bar { background: linear-gradient(90deg, #ff003c, #80001e); } 
         #mp-bar { background: linear-gradient(90deg, #00f0ff, #005f73); }
         .bar-text { position: absolute; width: 100%; text-align: center; font-size: 10px; font-weight: bold; line-height: 14px; top: 0; text-shadow: 1px 1px #000; }
 
-        #menu { position: fixed; top: 10px; right: 10px; display: none; gap: 8px; z-index: 1000; }
-        .menu-btn { background: rgba(17,17,17,0.9); border: 1px solid var(--neon-blue); padding: 8px 12px; border-radius: 6px; color: #fff; font-size: 10px; font-weight: bold; cursor: pointer; box-shadow: 0 0 8px rgba(0,240,255,0.2); }
+        #menu { position: fixed; top: 10px; right: 10px; display: none; gap: 8px; z-index: 2000; }
+        .menu-btn { background: rgba(17,17,17,0.9); border: 1px solid var(--neon-blue); padding: 8px 12px; border-radius: 6px; color: #fff; font-size: 10px; font-weight: bold; cursor: pointer; }
 
-        .screen { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 3000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; }
+        .screen { position: fixed; inset: 0; background: rgba(0,0,0,1); z-index: 5000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; }
         .hidden { display: none !important; }
-        h2 { color: var(--neon-blue); text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 10px var(--neon-blue); }
         .card { background: #111; border: 1px solid #333; padding: 15px; margin: 8px; width: 80%; border-radius: 8px; cursor: pointer; color: var(--neon-green); font-weight: bold; }
         
-        #html-loot-box { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 120px; height: 120px; background: rgba(255,215,0,0.15); border: 2px solid var(--gold); color: var(--gold); display: none; flex-direction: column; align-items: center; justify-content: center; font-weight: bold; z-index: 1500; border-radius: 10px; cursor: pointer; animation: pulse 1s infinite; text-shadow: 0 0 10px var(--gold); }
+        #html-loot-box { position: fixed; top: 40%; left: 50%; transform: translate(-50%, -50%); width: 100px; height: 100px; border: 2px solid var(--gold); color: var(--gold); display: none; flex-direction: column; align-items: center; justify-content: center; font-weight: bold; z-index: 1500; border-radius: 10px; animation: pulse 1s infinite; background: rgba(0,0,0,0.5); }
         
-        .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-height: 80vh; background: rgba(10,10,10,0.98); border: 2px solid var(--neon-blue); z-index: 2000; display: none; flex-direction: column; padding: 15px; border-radius: 10px; }
-        .inv-header { display: flex; gap: 5px; margin-bottom: 10px; }
-        .inv-header button { flex: 1; padding: 10px; background: #222; color: #fff; border: 1px solid #444; border-radius: 4px; font-weight: bold; cursor: pointer; }
-        .active-tab { background: var(--neon-blue) !important; color: #000 !important; }
+        .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-height: 80vh; background: rgba(10,10,10,0.98); border: 2px solid var(--neon-blue); z-index: 6000; display: none; flex-direction: column; padding: 15px; border-radius: 10px; }
         .inv-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; overflow-y: auto; max-height: 250px; }
-        .bag-slot { height: 50px; background: #151515; border: 1px solid #333; display: flex; align-items: center; justify-content: center; font-size: 9px; text-align: center; color: var(--neon-blue); border-radius: 4px; }
-        .equip-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px; }
-        .equip-slot { height: 60px; background: #151515; border: 1px solid #444; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 9px; color: #666; }
-        .stat-row { display: flex; justify-content: space-between; margin-bottom: 12px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 6px; align-items: center; }
-        .plus-btn { background: var(--neon-green); border: none; padding: 6px 14px; border-radius: 4px; font-weight: bold; cursor: pointer; color:#000; }
+        .bag-slot { height: 45px; background: #151515; border: 1px solid #333; display: flex; align-items: center; justify-content: center; font-size: 8px; text-align: center; color: var(--neon-blue); border-radius: 4px; }
+        .stat-row { display: flex; justify-content: space-between; margin-bottom: 10px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 6px; align-items: center; }
+        .plus-btn { background: var(--neon-green); border: none; padding: 6px 14px; border-radius: 4px; font-weight: bold; cursor: pointer; }
 
-        .floating-text { position: absolute; font-weight: bold; pointer-events: none; animation: floatUp 0.8s forwards; z-index: 4000; font-size: 24px; text-shadow: 2px 2px #000; }
+        .floating-text { position: absolute; font-weight: bold; pointer-events: none; animation: floatUp 0.8s forwards; z-index: 4000; font-size: 20px; }
         @keyframes floatUp { from { opacity:1; transform:translateY(0); } to { opacity:0; transform:translateY(-60px); } }
-        @keyframes pulse { 0% { transform: scale(1); box-shadow: 0 0 10px var(--gold); } 50% { transform: scale(1.05); box-shadow: 0 0 25px var(--gold); } 100% { transform: scale(1); box-shadow: 0 0 10px var(--gold); } }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
     </style>
 </head>
 <body>
 
     <div id="loading-screen" class="screen">
-        <h2>SYS.O_CONNECTING...</h2>
+        <h2 style="color:var(--neon-blue);">SYS.O_CONNECTING...</h2>
         <div id="loading-status" style="color:var(--neon-green); font-size:12px;">Siber-Ağ Bağlantısı Kuruluyor...</div>
     </div>
 
@@ -71,63 +65,55 @@
 
     <div id="class-screen" class="screen hidden">
         <h2>SINIFINI SEÇ</h2>
-        <div class="card" onclick="finalize('Slayer')">⚔️ SLAYER (Yakın Dövüş)</div>
-        <div class="card" onclick="finalize('Technomancer')">🔮 TECHNOMANCER (Uzak Büyü)</div>
-        <div class="card" onclick="finalize('Data-Sniper')">🏹 DATA-SNIPER (Uzak Silah)</div>
-        <div class="card" onclick="finalize('Architect')">🛡️ ARCHITECT (Yakın Tank)</div>
+        <div class="card" onclick="finalize('Slayer')">⚔️ SLAYER</div>
+        <div class="card" onclick="finalize('Technomancer')">🔮 TECHNOMANCER</div>
+        <div class="card" onclick="finalize('Data-Sniper')">🏹 DATA-SNIPER</div>
+        <div class="card" onclick="finalize('Architect')">🛡️ ARCHITECT</div>
     </div>
 
     <div id="hud">
         <div id="p-info" style="font-size:11px; font-weight:bold; color:var(--neon-blue); margin-bottom:8px;">PILOT: ---</div>
         <div class="bar-container"><div id="hp-bar" class="bar-fill"></div><div class="bar-text" id="hp-text">--- / ---</div></div>
         <div class="bar-container"><div id="mp-bar" class="bar-fill"></div><div class="bar-text" id="mp-text">--- / ---</div></div>
-        <div style="font-size:11px; color:var(--neon-green); margin-top:5px; font-weight:bold;">LVL: <span id="lvl">1</span> | EXP: <span id="exp">0</span></div>
+        <div style="font-size:11px; color:var(--neon-green); margin-top:5px;">LVL: <span id="lvl">1</span> | EXP: <span id="exp">0</span></div>
     </div>
 
     <div id="menu">
-        <div class="menu-btn" onclick="openModal('char-panel')">👤 STATS</div>
-        <div class="menu-btn" onclick="openModal('inv-panel')">🎒 INV</div>
-        <div class="menu-btn" onclick="town()" id="town-btn">🏠 TOWN</div>
+        <div class="menu-btn" onclick="openModal('char-panel')">STATS</div>
+        <div class="menu-btn" onclick="openModal('inv-panel')">INV</div>
+        <div class="menu-btn" onclick="town()" id="town-btn">TOWN</div>
     </div>
 
     <div id="game-container"></div>
     <div id="joystick-zone"></div>
     
-    <div id="action-bar" style="display:none;">
+    <div id="action-bar">
         <div class="skills-grid">
             <div class="skill-btn" onclick="useSkill(1)">S1</div>
             <div class="skill-btn" onclick="useSkill(2)">S2</div>
             <div class="skill-btn" onclick="useSkill(3)">S3</div>
-            <div class="skill-btn" onclick="useSkill(4)">S4</div>
-            <div class="skill-btn" onclick="usePot('HP')" style="border-color:var(--neon-red); color:var(--neon-red);">HP<br>POT</div>
-            <div class="skill-btn" onclick="usePot('MP')" style="border-color:var(--neon-blue); color:var(--neon-blue);">MP<br>POT</div>
+            <div class="skill-btn" onclick="usePot('HP')" style="color:red">HP</div>
+            <div class="skill-btn" onclick="usePot('MP')" style="color:cyan">MP</div>
         </div>
-        <div class="attack-btn" onclick="performAttack()">ATAK<br>⚔️</div>
+        <div class="attack-btn" onclick="performAttack()">ATAK</div>
     </div>
 
-    <div id="html-loot-box" onclick="collectLoot()"><span>DATA-CUBE</span><span style="font-size:24px;">🎁</span></div>
+    <div id="html-loot-box" onclick="collectLoot()">DATA-CUBE<br>🎁</div>
 
     <div id="char-panel" class="modal">
-        <div style="display:flex; justify-content:space-between; margin-bottom:15px; border-bottom:1px solid #333; padding-bottom:10px;">
-            <span style="color:var(--neon-blue); font-weight:bold;">KARAKTER ANALİZİ</span>
-            <span onclick="closeModals()" style="color:var(--neon-red); cursor:pointer; font-weight:bold;">[KAPAT]</span>
+        <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+            <span>STATS (PUAN: <span id="stat-pts">0</span>)</span>
+            <span onclick="closeModals()" style="color:red; cursor:pointer;">[X]</span>
         </div>
-        <div style="color:var(--neon-green); margin-bottom:15px; font-weight:bold; font-size:14px;">BOŞ PUAN: <span id="stat-pts">0</span></div>
         <div id="stat-content"></div>
     </div>
 
     <div id="inv-panel" class="modal">
-        <div class="inv-header">
-            <button id="tab-equip-btn" onclick="switchTab('equip')" class="active-tab">EKİPMAN</button>
-            <button id="tab-bag-btn" onclick="switchTab('bag')">ÇANTA (50)</button>
-            <button onclick="closeModals()" style="max-width:45px; background:var(--neon-red); border:none;">X</button>
+        <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+            <span>ENVANTER (50 Slot)</span>
+            <span onclick="closeModals()" style="color:red; cursor:pointer;">[X]</span>
         </div>
-        <div id="equip-view" class="equip-grid">
-            <div class="equip-slot">KAFALIK</div><div class="equip-slot">KOLYE</div><div class="equip-slot">GÖĞÜS</div>
-            <div class="equip-slot">KOLLUK</div><div class="equip-slot">KEMER</div><div class="equip-slot">DONLUK</div>
-            <div class="equip-slot">YÜZÜK 1</div><div class="equip-slot">AYAKLIK</div><div class="equip-slot">YÜZÜK 2</div>
-        </div>
-        <div id="bag-view" class="inv-grid" style="display:none;"></div>
+        <div id="bag-view" class="inv-grid"></div>
     </div>
 
     <script>
@@ -137,24 +123,11 @@
         try { supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY); } catch(e){}
         const tg = window.Telegram.WebApp;
 
-        let p = { id: 0, username: 'Pilot', str: 10, vit: 10, int_stat: 10, dex: 10, stat_points: 0, level: 1, exp: 0, nxp: 0, class: '---', race: '---' };
+        let p = { id: 0, username: 'Pilot', str: 10, vit: 10, int_stat: 10, dex: 10, stat_points: 0, level: 1, exp: 0, nxp: 0, class: 'Slayer', race: 'Human' };
         let mobHP = 100;
         let inventory = [];
         
-        let gameScene;
-        let playerSprite;
-        let mobSprite;
-        let isMobDead = false;
-
-        function buildBag() {
-            const bag = document.getElementById('bag-view');
-            bag.innerHTML = "";
-            for(let i=0; i<50; i++) {
-                let s = document.createElement('div');
-                s.className = 'bag-slot'; s.id = `slot-${i}`; s.innerText = "--";
-                bag.appendChild(s);
-            }
-        }
+        let gameScene, playerSprite, mobSprite, isMobDead = false;
 
         async function init() {
             tg.expand();
@@ -185,186 +158,117 @@
             document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
             document.getElementById('hud').style.display = 'block';
             document.getElementById('menu').style.display = 'flex';
-            document.getElementById('action-bar').style.display = 'flex'; 
+            document.getElementById('action-bar').style.display = 'flex';
             buildBag(); updateUI(); initPhaser(); 
+        }
+
+        function buildBag() {
+            const bag = document.getElementById('bag-view'); bag.innerHTML = "";
+            for(let i=0; i<50; i++) {
+                let s = document.createElement('div'); s.className = 'bag-slot'; s.id = `slot-${i}`; s.innerText = "--";
+                bag.appendChild(s);
+            }
         }
 
         function initPhaser() {
             const config = {
-                type: Phaser.AUTO,
-                parent: 'game-container',
-                width: window.innerWidth,
-                height: window.innerHeight,
-                transparent: true,
-                physics: { default: 'arcade', arcade: { gravity: { y: 0 }, debug: false } },
-                scene: { preload: preload, create: create, update: update }
+                type: Phaser.AUTO, parent: 'game-container', width: window.innerWidth, height: window.innerHeight, transparent: true,
+                physics: { default: 'arcade', arcade: { gravity: { y: 0 } } },
+                scene: { preload: () => {}, create: create, update: () => {} }
             };
             new Phaser.Game(config);
         }
 
-        function preload() {
-            // Boş bıraktık, yeşil kare sorununu çözmek için emoji render motoru kullanıyoruz.
-        }
-
         function create() {
             gameScene = this;
+            this.add.grid(window.innerWidth/2, window.innerHeight/2, window.innerWidth*2, window.innerHeight*2, 40, 40, 0x222222, 0, 0x333333, 0.2);
             
-            // IRK VE SINIFA GÖRE EMOJİ SEÇİMİ
-            let raceClassEmojis = {
-                'Human': {
-                    'Slayer': '🥷',         
-                    'Technomancer': '🧑‍💻',  
-                    'Data-Sniper': '👁️‍🗨️',   
-                    'Architect': '🛡️'       
-                },
-                'AI': {
-                    'Slayer': '🦾',         
-                    'Technomancer': '🛸',   
-                    'Data-Sniper': '🛰️',    
-                    'Architect': '🕋'       
-                }
-            };
+            let emojis = { 'Human': { 'Slayer':'🥷', 'Technomancer':'🧑‍💻', 'Data-Sniper':'👁️‍🗨️', 'Architect':'🛡️' }, 
+                           'AI': { 'Slayer':'🦾', 'Technomancer':'🛸', 'Data-Sniper':'🛰️', 'Architect':'🕋' } };
+            
+            let raceKey = p.race || 'Human';
+            let classKey = p.class || 'Slayer';
+            let myEmoji = emojis[raceKey][classKey] || '🤖';
 
-            let myRace = p.race && p.race !== '---' ? p.race : 'Human';
-            let myClass = p.class && p.class !== '---' ? p.class : 'Slayer';
-            let myEmoji = raceClassEmojis[myRace][myClass] || '🤖';
-
-            // Emojiyi bir "Fizik Objesi" olarak ekle
-            playerSprite = this.physics.add.text(window.innerWidth / 2, window.innerHeight / 2 + 100, myEmoji, { fontSize: '55px' }).setOrigin(0.5);
+            playerSprite = this.physics.add.text(window.innerWidth/2, window.innerHeight/2 + 100, myEmoji, { fontSize: '50px' }).setOrigin(0.5);
             playerSprite.setCollideWorldBounds(true);
-            
             spawnMob();
 
-            const joystickManager = nipplejs.create({
-                zone: document.getElementById('joystick-zone'),
-                mode: 'static',
-                position: { left: '50%', top: '50%' },
-                color: '#00f0ff',
-                size: 100
-            });
-
-            joystickManager.on('move', (evt, data) => {
+            const jManager = nipplejs.create({ zone: document.getElementById('joystick-zone'), mode: 'static', position: { left: '50%', top: '50%' }, color: '#00f0ff', size: 100 });
+            jManager.on('move', (evt, data) => {
                 if(data.vector) {
-                    const speed = 150 + (p.dex * 1.5); 
-                    playerSprite.setVelocity(data.vector.x * speed, -data.vector.y * speed);
-                    
-                    if(data.vector.x > 0) playerSprite.setAngle(15);
-                    else if(data.vector.x < 0) playerSprite.setAngle(-15);
+                    const spd = 160 + (p.dex * 1.5);
+                    playerSprite.setVelocity(data.vector.x * spd, -data.vector.y * spd);
+                    playerSprite.setAngle(data.vector.x * 20);
                 }
             });
-            joystickManager.on('end', () => {
-                playerSprite.setVelocity(0, 0);
-                playerSprite.setAngle(0);
-            });
+            jManager.on('end', () => { playerSprite.setVelocity(0); playerSprite.setAngle(0); });
         }
 
         function spawnMob() {
             if(mobSprite) mobSprite.destroy();
             isMobDead = false;
             mobHP = 100 + (p.level * 40);
-            
-            // Örümcek Emojisi
-            mobSprite = gameScene.physics.add.text(window.innerWidth / 2, window.innerHeight / 2 - 80, '🕷️', { fontSize: '70px' }).setOrigin(0.5);
-            gameScene.tweens.add({ targets: mobSprite, scaleX: 1.1, scaleY: 1.1, yoyo: true, repeat: -1, duration: 1000 });
+            mobSprite = gameScene.physics.add.text(window.innerWidth/2, window.innerHeight/2 - 80, '🕷️', { fontSize: '70px' }).setOrigin(0.5);
+            gameScene.tweens.add({ targets: mobSprite, scale: 1.1, yoyo: true, repeat: -1, duration: 1000 });
         }
 
-        function update() { }
-
-        // --- MENZİL VE SAVAŞ ---
         window.performAttack = () => {
             if(isMobDead || !mobSprite || !playerSprite) return;
-
             const dist = Phaser.Math.Distance.Between(playerSprite.x, playerSprite.y, mobSprite.x, mobSprite.y);
-            
-            let maxRange = 110; 
-            if (p.class === 'Technomancer' || p.class === 'Data-Sniper') maxRange = 350; 
-            
-            if(dist <= maxRange) {
-                const dmg = 5 + (p.str * 1.5); 
-                mobHP -= dmg;
-                
-                gameScene.tweens.add({ targets: playerSprite, y: playerSprite.y - 10, yoyo: true, duration: 100 });
-                gameScene.tweens.add({ targets: mobSprite, x: mobSprite.x + (Math.random() > 0.5 ? 10 : -10), yoyo: true, duration: 50 });
-
-                showFloatingText(`-${Math.floor(dmg)}`, "var(--neon-red)", mobSprite.x, mobSprite.y - 40);
-
-                if (mobHP <= 0) {
-                    isMobDead = true;
-                    mobSprite.setVisible(false);
-                    document.getElementById('html-loot-box').style.display = 'flex'; 
-                }
-            } else {
-                showFloatingText("MENZİL DIŞI!", "gray", playerSprite.x, playerSprite.y - 40);
-            }
+            let range = (p.class === 'Technomancer' || p.class === 'Data-Sniper') ? 350 : 120;
+            if(dist <= range) {
+                const dmg = 5 + (p.str * 1.5); mobHP -= dmg;
+                gameScene.tweens.add({ targets: mobSprite, x: mobSprite.x+(Math.random()>0.5?10:-10), yoyo:true, duration:50 });
+                showFT(`-${Math.floor(dmg)}`, "red", mobSprite.x, mobSprite.y - 40);
+                if (mobHP <= 0) { isMobDead = true; mobSprite.setVisible(false); document.getElementById('html-loot-box').style.display = 'flex'; }
+            } else { showFT("MENZİL DIŞI!", "gray", playerSprite.x, playerSprite.y - 40); }
         };
 
-        window.useSkill = (slotNumber) => { alert(`Levelin yetersiz! Skill Slot ${slotNumber} kilitli.`); };
-        window.usePot = (type) => { showFloatingText(`+${type}`, type === 'HP' ? "var(--neon-green)" : "var(--neon-blue)", playerSprite.x, playerSprite.y - 40); };
-
-        function showFloatingText(text, color, x, y) {
-            const el = document.createElement('div'); el.className = 'floating-text'; el.innerText = text; el.style.color = color; 
-            el.style.left = x + 'px'; el.style.top = y + 'px'; document.body.appendChild(el); setTimeout(() => el.remove(), 800);
+        function showFT(t, c, x, y) {
+            const el = document.createElement('div'); el.className = 'floating-text'; el.innerText = t; el.style.color = c;
+            el.style.left = x+'px'; el.style.top = y+'px'; document.body.appendChild(el); setTimeout(() => el.remove(), 800);
         }
 
         window.collectLoot = async () => {
-            p.exp += 150; p.nxp += 50;  
-            let target = 500 * Math.pow(p.level, 1.5);
-            if (p.exp >= target) { p.level++; p.stat_points += 5; alert(`LEVEL UP! [${p.level}]`); }
-
-            if (Math.random() < 0.6) {
-                let items = [{name:"Siber-Kablo", stackable:true}, {name:"Enerji Hücresi", stackable:true}, {name:"Slayer Kılıcı", stackable:false}];
-                addItem(items[Math.floor(Math.random() * items.length)]);
-            }
+            p.exp += 150; p.nxp += 50;
+            if (p.exp >= 500 * Math.pow(p.level, 1.5)) { p.level++; p.stat_points += 5; alert(`LEVEL UP! [${p.level}]`); }
+            if (Math.random() < 0.6) { addItem({name: "Siber-Kablo", stackable: true}); }
             document.getElementById('html-loot-box').style.display = 'none'; spawnMob(); updateUI();
             try { await supabaseClient.from('pilots_data').update(p).eq('id', p.id); } catch(e){}
         };
 
         function addItem(item) {
-            if (item.stackable) {
-                let exist = inventory.find(i => i.name === item.name);
-                if (exist) exist.count++; else inventory.push({ ...item, count: 1 });
-            } else { inventory.push({ ...item, count: 1 }); }
+            let exist = inventory.find(i => i.name === item.name);
+            if (exist) exist.count++; else inventory.push({ ...item, count: 1 });
             updateBagUI();
         }
 
         function updateBagUI() {
             for(let i=0; i<50; i++) document.getElementById(`slot-${i}`).innerText = "--";
-            inventory.forEach((item, idx) => { if(idx < 50) document.getElementById(`slot-${idx}`).innerText = item.stackable ? `${item.name} x${item.count}` : item.name; });
+            inventory.forEach((item, idx) => { if(idx < 50) document.getElementById(`slot-${idx}`).innerText = `${item.name} x${item.count}`; });
         }
 
         function updateUI() {
-            document.getElementById('p-info').innerText = `${p.username.toUpperCase()} [${p.class}]`;
+            document.getElementById('p-info').innerText = `${p.username.toUpperCase()} [${p.race}-${p.class}]`;
             document.getElementById('lvl').innerText = p.level; document.getElementById('exp').innerText = Math.floor(p.exp);
             document.getElementById('stat-pts').innerText = p.stat_points;
-
-            const maxHP = 100 + (p.vit * 20); const maxMP = 50 + (p.int_stat * 10);
-            document.getElementById('hp-bar').style.width = "100%"; document.getElementById('mp-bar').style.width = "100%";
-            document.getElementById('hp-text').innerText = `${maxHP} / ${maxHP}`; document.getElementById('mp-text').innerText = `${maxMP} / ${maxMP}`;
+            const maxHP = 100 + (p.vit * 20); document.getElementById('hp-bar').style.width = "100%"; document.getElementById('hp-text').innerText = `${maxHP}/${maxHP}`;
             renderStats();
         }
 
         function renderStats() {
             const cont = document.getElementById('stat-content');
-            const stats = [{id:'str', n:'STR'}, {id:'dex', n:'DEX'}, {id:'int_stat', n:'INT'}, {id:'vit', n:'VIT'}];
-            cont.innerHTML = stats.map(s => `
-                <div class="stat-row"><span>${s.n}: <b style="color:var(--neon-blue);">${p[s.id]}</b></span>
-                ${p.stat_points > 0 ? `<button class="plus-btn" onclick="upStat('${s.id}')">+</button>` : ''}</div>`).join('');
+            cont.innerHTML = ['str','dex','int_stat','vit'].map(s => `<div class="stat-row"><span>${s.toUpperCase()}: <b>${p[s]}</b></span>${p.stat_points>0?`<button class="plus-btn" onclick="upStat('${s}')">+</button>`:''}</div>`).join('');
         }
 
         window.upStat = async (s) => { p[s]++; p.stat_points--; updateUI(); try { await supabaseClient.from('pilots_data').update(p).eq('id', p.id); } catch(e){} };
-
-        window.switchTab = (t) => {
-            document.getElementById('equip-view').style.display = t === 'equip' ? 'grid' : 'none'; document.getElementById('bag-view').style.display = t === 'bag' ? 'grid' : 'none';
-            document.getElementById('tab-equip-btn').className = t === 'equip' ? 'active-tab' : ''; document.getElementById('tab-bag-btn').className = t === 'bag' ? 'active-tab' : '';
-        };
-
-        window.town = () => {
-            let btn = document.getElementById('town-btn'); let c = 3; btn.innerText = `...${c}`;
-            let t = setInterval(() => { c--; btn.innerText = `...${c}`; if(c <= 0) { clearInterval(t); btn.innerText = "🏠 TOWN"; alert("ŞEHRE DÖNÜLÜYOR"); } }, 1000);
-        };
-
+        window.town = () => alert("TOWN: NEXUS CORE");
+        window.switchTab = (t) => { /* Çanta sekmeleri eklenecek */ };
         window.openModal = (id) => { document.getElementById(id).style.display = 'flex'; };
         window.closeModals = () => { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); };
+        window.useSkill = (s) => alert("Skill kilitli!");
+        window.usePot = (t) => showFT("+POT", t==='HP'?'green':'blue', playerSprite.x, playerSprite.y-40);
 
         init();
     </script>
