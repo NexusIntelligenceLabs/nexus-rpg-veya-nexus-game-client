@@ -12,8 +12,10 @@
         :root { --neon-green: #0f0; --neon-blue: #00f0ff; --neon-red: #ff003c; --dark-bg: #050505; --gold: #ffd700; }
         body { background: var(--dark-bg); color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; overflow: hidden; user-select: none; touch-action: none; }
         
+        /* 1. KATMAN: OYUN DÜNYASI */
         #game-container { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; }
 
+        /* 2. KATMAN: KONTROLLER */
         #joystick-zone { position: fixed; bottom: 40px; left: 30px; width: 120px; height: 120px; z-index: 1000; }
         #action-bar { position: fixed; bottom: 20px; right: 20px; z-index: 1000; display: none; flex-direction: column; align-items: flex-end; gap: 10px; }
         .skills-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
@@ -22,7 +24,8 @@
         .attack-btn { width: 80px; height: 80px; background: rgba(255,0,60,0.15); border: 2px solid var(--neon-red); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold; color: var(--neon-red); cursor: pointer; box-shadow: 0 0 15px rgba(255,0,60,0.3); }
         .attack-btn:active { transform: scale(0.9); background: rgba(255,0,60,0.5); }
 
-        #hud { position: fixed; top: 10px; left: 10px; z-index: 2000; background: rgba(0,0,0,0.85); padding: 10px; border-radius: 8px; border: 1px solid var(--neon-blue); min-width: 160px; pointer-events: none; }
+        /* 3. KATMAN: HUD VE MODALLAR */
+        #hud { position: fixed; top: 10px; left: 10px; z-index: 2000; background: rgba(0,0,0,0.85); padding: 10px; border-radius: 8px; border: 1px solid var(--neon-blue); min-width: 160px; pointer-events: none; display: none; }
         .bar-container { width: 100%; height: 14px; background: #222; margin-bottom: 6px; border-radius: 4px; position: relative; overflow: hidden; border: 1px solid #444; }
         .bar-fill { height: 100%; width: 100%; transition: width 0.3s; }
         #hp-bar { background: linear-gradient(90deg, #ff003c, #80001e); } 
@@ -39,14 +42,11 @@
         #html-loot-box { position: fixed; top: 40%; left: 50%; transform: translate(-50%, -50%); width: 100px; height: 100px; border: 2px solid var(--gold); color: var(--gold); display: none; flex-direction: column; align-items: center; justify-content: center; font-weight: bold; z-index: 1500; border-radius: 10px; animation: pulse 1s infinite; background: rgba(0,0,0,0.5); cursor: pointer; }
         
         .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-height: 80vh; background: rgba(10,10,10,0.98); border: 2px solid var(--neon-blue); z-index: 6000; display: none; flex-direction: column; padding: 15px; border-radius: 10px; }
-        
-        /* GERİ GETİRİLEN 9 SLOTLU EKİPMAN CSS'LERİ */
         .inv-header { display: flex; gap: 5px; margin-bottom: 10px; }
         .inv-header button { flex: 1; padding: 10px; background: #222; color: #fff; border: 1px solid #444; border-radius: 4px; font-weight: bold; cursor: pointer; }
         .active-tab { background: var(--neon-blue) !important; color: #000 !important; }
         .equip-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px; }
         .equip-slot { height: 60px; background: #151515; border: 1px solid #444; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 9px; color: #666; }
-
         .inv-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; overflow-y: auto; max-height: 250px; }
         .bag-slot { height: 45px; background: #151515; border: 1px solid #333; display: flex; align-items: center; justify-content: center; font-size: 8px; text-align: center; color: var(--neon-blue); border-radius: 4px; }
         .stat-row { display: flex; justify-content: space-between; margin-bottom: 10px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 6px; align-items: center; }
@@ -133,21 +133,25 @@
     </div>
 
     <script>
+        // --- GÜVENLİ BAŞLATMA ---
+        let tg;
+        try { tg = window.Telegram.WebApp; } catch(e) {}
+
         const SUPABASE_URL = 'https://gdpiehrnpeiauhmaoumi.supabase.co';
         const SUPABASE_KEY = 'EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkcGllaHJucGVpYXVobWFvdW1pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEwMDk4MjcsImV4cCI6MjA4NjU4NTgyN30.iJHq9gnoPtBLaRuByLOV8VjesBL9qp1rQs1d4_fYJXM';
         let supabaseClient;
         try { supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY); } catch(e){}
-        const tg = window.Telegram.WebApp;
 
         let p = { id: 0, username: 'Pilot', str: 10, vit: 10, int_stat: 10, dex: 10, stat_points: 0, level: 1, exp: 0, nxp: 0, class: 'Slayer', race: 'Human' };
         let mobHP = 100;
         let inventory = [];
-        
-        let gameScene, playerSprite, mobSprite, isMobDead = false;
+        let gameScene, playerSprite, mobSprite, isMobDead = false, phaserStarted = false;
 
         async function init() {
-            tg.expand();
-            const user = tg.initDataUnsafe?.user || { id: 12345, username: 'Test_Pilotu' };
+            // Telegram engeline takılmamak için try-catch eklendi
+            try { if(tg && tg.expand) tg.expand(); } catch(e) {}
+            
+            const user = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) ? tg.initDataUnsafe.user : { id: 12345, username: 'Test_Pilotu' };
             
             let timeout = setTimeout(() => {
                 document.getElementById('loading-screen').classList.add('hidden');
@@ -165,29 +169,34 @@
                         document.getElementById('loading-screen').classList.add('hidden'); 
                         document.getElementById('race-screen').classList.remove('hidden'); 
                     }
+                } else {
+                    clearTimeout(timeout); startGame();
                 }
             } catch(e) { 
-                clearTimeout(timeout); 
-                startGame(); 
+                clearTimeout(timeout); startGame(); 
             }
         }
 
         window.setRace = (r) => { p.race = r; document.getElementById('race-screen').classList.add('hidden'); document.getElementById('class-screen').classList.remove('hidden'); };
         window.finalize = async (c) => {
-            const user = tg.initDataUnsafe?.user || { id: 12345, username: 'Test_Pilotu' };
+            const user = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) ? tg.initDataUnsafe.user : { id: 12345, username: 'Pilot' };
             p.class = c; p.id = user.id; p.username = user.username || user.first_name || 'Pilot';
             try { await supabaseClient.from('pilots_data').upsert(p); } catch(e){}
             startGame();
         };
 
         function startGame() {
-            document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
-            document.getElementById('hud').style.display = 'block';
-            document.getElementById('menu').style.display = 'flex';
-            document.getElementById('action-bar').style.display = 'flex';
-            buildBag(); 
-            updateUI(); 
-            initPhaser(); 
+            try {
+                document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+                document.getElementById('hud').style.display = 'block';
+                document.getElementById('menu').style.display = 'flex';
+                document.getElementById('action-bar').style.display = 'flex';
+                buildBag(); 
+                updateUI(); 
+                initPhaser(); 
+            } catch (err) {
+                console.error("Start Game Hatası:", err);
+            }
         }
 
         function buildBag() {
@@ -198,18 +207,26 @@
             }
         }
 
+        // --- PHASER VE FİZİK MOTORU (DÜZELTİLDİ) ---
         function initPhaser() {
+            if(phaserStarted) return; // Çift çalışmayı engelle
+            phaserStarted = true;
+            
             const config = {
                 type: Phaser.AUTO, parent: 'game-container', width: window.innerWidth, height: window.innerHeight, transparent: true,
                 physics: { default: 'arcade', arcade: { gravity: { y: 0 } } },
-                scene: { preload: () => {}, create: create, update: () => {} }
+                scene: { preload: preload, create: create, update: update }
             };
             new Phaser.Game(config);
         }
 
+        function preload() { }
+
         function create() {
             gameScene = this;
-            this.add.grid(window.innerWidth/2, window.innerHeight/2, window.innerWidth*2, window.innerHeight*2, 40, 40, 0x222222, 0, 0x333333, 0.2);
+            
+            // Arka Plan Grid (Çökmeyi önlemek için try-catch içinde)
+            try { this.add.grid(window.innerWidth/2, window.innerHeight/2, window.innerWidth*2, window.innerHeight*2, 40, 40, 0x222222, 0, 0x333333, 0.2); } catch(e){}
             
             let emojis = { 
                 'Human': { 'Slayer':'🥷', 'Technomancer':'🧑‍💻', 'Data-Sniper':'👁️‍🗨️', 'Architect':'🛡️' }, 
@@ -220,19 +237,23 @@
             let safeClass = ['Slayer', 'Technomancer', 'Data-Sniper', 'Architect'].includes(p.class) ? p.class : 'Slayer';
             let myEmoji = emojis[safeRace][safeClass] || '🤖';
 
+            // Karakter Oluştur
             playerSprite = this.physics.add.text(window.innerWidth/2, window.innerHeight/2 + 100, myEmoji, { fontSize: '50px' }).setOrigin(0.5);
             playerSprite.setCollideWorldBounds(true);
             spawnMob();
 
-            const jManager = nipplejs.create({ zone: document.getElementById('joystick-zone'), mode: 'static', position: { left: '50%', top: '50%' }, color: '#00f0ff', size: 100 });
-            jManager.on('move', (evt, data) => {
-                if(data.vector) {
-                    const spd = 160 + (p.dex * 1.5);
-                    playerSprite.setVelocity(data.vector.x * spd, -data.vector.y * spd);
-                    playerSprite.setAngle(data.vector.x * 20);
-                }
-            });
-            jManager.on('end', () => { playerSprite.setVelocity(0); playerSprite.setAngle(0); });
+            // Joystick Oluştur
+            if (typeof nipplejs !== 'undefined') {
+                const jManager = nipplejs.create({ zone: document.getElementById('joystick-zone'), mode: 'static', position: { left: '50%', top: '50%' }, color: '#00f0ff', size: 100 });
+                jManager.on('move', (evt, data) => {
+                    if(data && data.vector && playerSprite) {
+                        const spd = 160 + ((p.dex || 10) * 1.5);
+                        playerSprite.setVelocity(data.vector.x * spd, -data.vector.y * spd);
+                        playerSprite.setAngle(data.vector.x * 20);
+                    }
+                });
+                jManager.on('end', () => { if(playerSprite) { playerSprite.setVelocity(0); playerSprite.setAngle(0); }});
+            }
         }
 
         function spawnMob() {
@@ -245,6 +266,9 @@
             gameScene.tweens.add({ targets: mobSprite, scale: 1.1, yoyo: true, repeat: -1, duration: 1000 });
         }
 
+        function update() {}
+
+        // --- SAVAŞ MEKANİKLERİ ---
         window.performAttack = () => {
             if(isMobDead || !mobSprite || !playerSprite) return;
             const dist = Phaser.Math.Distance.Between(playerSprite.x, playerSprite.y, mobSprite.x, mobSprite.y);
@@ -254,11 +278,10 @@
                 const dmg = 5 + ((p.str || 10) * 1.5); 
                 mobHP -= dmg;
                 gameScene.tweens.add({ targets: mobSprite, x: mobSprite.x+(Math.random()>0.5?10:-10), yoyo:true, duration:50 });
-                showFT(`-${Math.floor(dmg)}`, "red", mobSprite.x, mobSprite.y - 40);
+                showFT(`-${Math.floor(dmg)}`, "var(--neon-red)", mobSprite.x, mobSprite.y - 40);
                 
                 if (mobHP <= 0) { 
-                    isMobDead = true; 
-                    mobSprite.setVisible(false); 
+                    isMobDead = true; mobSprite.setVisible(false); 
                     document.getElementById('html-loot-box').style.display = 'flex'; 
                 }
             } else { 
@@ -272,20 +295,16 @@
         }
 
         window.collectLoot = async () => {
-            p.exp = (p.exp || 0) + 150; 
-            p.nxp = (p.nxp || 0) + 50;
+            p.exp = (p.exp || 0) + 150; p.nxp = (p.nxp || 0) + 50;
             let currentLevel = p.level || 1;
             
             if (p.exp >= 500 * Math.pow(currentLevel, 1.5)) { 
-                p.level = currentLevel + 1; 
-                p.stat_points = (p.stat_points || 0) + 5; 
+                p.level = currentLevel + 1; p.stat_points = (p.stat_points || 0) + 5; 
                 alert(`LEVEL UP! [${p.level}]`); 
             }
-            
             if (Math.random() < 0.6) { addItem({name: "Siber-Kablo", stackable: true}); }
-            document.getElementById('html-loot-box').style.display = 'none'; 
-            spawnMob(); 
-            updateUI();
+            
+            document.getElementById('html-loot-box').style.display = 'none'; spawnMob(); updateUI();
             try { await supabaseClient.from('pilots_data').update(p).eq('id', p.id); } catch(e){}
         };
 
@@ -300,6 +319,7 @@
             inventory.forEach((item, idx) => { if(idx < 50) document.getElementById(`slot-${idx}`).innerText = `${item.name} x${item.count}`; });
         }
 
+        // --- UI GÜNCELLEMELERİ ---
         function updateUI() {
             let safeName = p.username ? String(p.username).toUpperCase() : "PILOT";
             let safeRace = p.race || "Human";
@@ -312,11 +332,8 @@
             
             const maxHP = 100 + ((p.vit || 10) * 20); 
             const maxMP = 50 + ((p.int_stat || 10) * 10);
-            document.getElementById('hp-bar').style.width = "100%"; 
-            document.getElementById('mp-bar').style.width = "100%";
-            document.getElementById('hp-text').innerText = `${maxHP}/${maxHP}`;
-            document.getElementById('mp-text').innerText = `${maxMP}/${maxMP}`;
-            
+            document.getElementById('hp-bar').style.width = "100%"; document.getElementById('mp-bar').style.width = "100%";
+            document.getElementById('hp-text').innerText = `${maxHP}/${maxHP}`; document.getElementById('mp-text').innerText = `${maxMP}/${maxMP}`;
             renderStats();
         }
 
@@ -330,9 +347,7 @@
         }
 
         window.upStat = async (s) => { 
-            p[s] = (p[s] || 10) + 1; 
-            p.stat_points--; 
-            updateUI(); 
+            p[s] = (p[s] || 10) + 1; p.stat_points--; updateUI(); 
             try { await supabaseClient.from('pilots_data').update(p).eq('id', p.id); } catch(e){} 
         };
         
@@ -349,6 +364,7 @@
         window.useSkill = (s) => alert("Skill kilitli!");
         window.usePot = (t) => showFT(`+${t}`, t==='HP'?'#0f0':'#00f0ff', playerSprite.x, playerSprite.y-40);
 
+        // OYUNU BAŞLAT
         init();
     </script>
 </body>
