@@ -14,9 +14,7 @@
         
         #game-container { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; }
         
-        /* ARAYÜZ (Bir Öncekiyle Aynı - Temiz ve Düzenli) */
         #joystick-zone { position: fixed; bottom: 50px; left: 20px; width: 120px; height: 120px; z-index: 1000; }
-
         #action-bar { position: fixed; bottom: 15px; right: 10px; z-index: 1000; display: flex; align-items: flex-end; gap: 10px; transform: scale(0.95); transform-origin: bottom right; }
         .skills-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 5px; }
         .skill-btn { width: 45px; height: 45px; background: rgba(17,17,17,0.85); border: 1px solid var(--neon-blue); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; color: #fff; cursor: pointer; box-shadow: 0 0 8px rgba(0,240,255,0.2); transition: 0.1s; }
@@ -53,7 +51,7 @@
         .stat-row { display: flex; justify-content: space-between; margin-bottom: 12px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 6px; align-items: center; }
         .plus-btn { background: var(--neon-green); border: none; padding: 6px 14px; border-radius: 4px; font-weight: bold; cursor: pointer; color:#000; }
 
-        .floating-text { position: absolute; font-weight: bold; pointer-events: none; animation: floatUp 0.8s forwards; z-index: 4000; font-size: 20px; text-shadow: 2px 2px #000; }
+        .floating-text { position: absolute; font-weight: bold; pointer-events: none; animation: floatUp 0.8s forwards; z-index: 4000; font-size: 24px; text-shadow: 2px 2px #000; }
         @keyframes floatUp { from { opacity:1; transform:translateY(0); } to { opacity:0; transform:translateY(-60px); } }
         @keyframes pulse { 0% { transform: scale(1); box-shadow: 0 0 10px var(--gold); } 50% { transform: scale(1.05); box-shadow: 0 0 25px var(--gold); } 100% { transform: scale(1); box-shadow: 0 0 10px var(--gold); } }
     </style>
@@ -191,7 +189,6 @@
             buildBag(); updateUI(); initPhaser(); 
         }
 
-        // --- PHASER GRAFİK YÜKLEME (PRELOAD) ---
         function initPhaser() {
             const config = {
                 type: Phaser.AUTO,
@@ -206,51 +203,38 @@
         }
 
         function preload() {
-            // ORTAK DİKKAT: İleride kendi siber çizimlerini yaptığında, bu linkleri kendi Supabase Storage linklerinle değiştireceksin.
-            // Şimdilik sınıfları ayırt etmek için Flat Vector tarzına uygun farklı simgeler kullanıyoruz.
-            this.load.image('class_Slayer', 'https://labs.phaser.io/assets/sprites/sword_silver.png'); // Kılıç (Slayer)
-            this.load.image('class_Technomancer', 'https://labs.phaser.io/assets/sprites/orb-blue.png'); // Mavi Küre (Techno)
-            this.load.image('class_Data-Sniper', 'https://labs.phaser.io/assets/sprites/shmup-ship.png'); // Gemi/Okçu (Sniper)
-            this.load.image('class_Architect', 'https://labs.phaser.io/assets/sprites/shield.png'); // Kalkan (Architect)
-            
-            // VOID-SPIDER (Gerçek bir örümcek vektörü)
-            this.load.image('void_spider', 'https://labs.phaser.io/assets/sprites/tarantula.png');
-            
-            // Eğer veritabanında sınıf yoksa yedek görsel
-            this.load.image('fallback', 'https://labs.phaser.io/assets/sprites/phaser-dude.png'); 
+            // Boş bıraktık, yeşil kare sorununu çözmek için emoji render motoru kullanıyoruz.
         }
 
         function create() {
             gameScene = this;
             
-            // IRK VE SINIFA GÖRE ÇİFT KATMANLI GÖRSEL SEÇİMİ
+            // IRK VE SINIFA GÖRE EMOJİ SEÇİMİ
             let raceClassEmojis = {
                 'Human': {
-                    'Slayer': '🥷',         // Ninja/Sokak Savaşçısı
-                    'Technomancer': '🧑‍💻',  // Hacker/Mühendis
-                    'Data-Sniper': '👁️‍🗨️',   // Hedef Gözü/Nişancı
-                    'Architect': '🛡️'       // Kalkanlı Koruyucu
+                    'Slayer': '🥷',         
+                    'Technomancer': '🧑‍💻',  
+                    'Data-Sniper': '👁️‍🗨️',   
+                    'Architect': '🛡️'       
                 },
                 'AI': {
-                    'Slayer': '🦾',         // Mekanik Kesici Kol
-                    'Technomancer': '🛸',   // Uçan Veri Dronu
-                    'Data-Sniper': '🛰️',    // Yörünge Silahı
-                    'Architect': '🕋'       // Aşılmaz Veri Küpü
+                    'Slayer': '🦾',         
+                    'Technomancer': '🛸',   
+                    'Data-Sniper': '🛰️',    
+                    'Architect': '🕋'       
                 }
             };
 
-            // Oyuncunun ırk ve sınıfını kontrol et, yoksa varsayılan ata
             let myRace = p.race && p.race !== '---' ? p.race : 'Human';
             let myClass = p.class && p.class !== '---' ? p.class : 'Slayer';
-            let myEmoji = raceClassEmojis[myRace][myClass] || '❓';
+            let myEmoji = raceClassEmojis[myRace][myClass] || '🤖';
 
-            // Karakteri ekrana bas
+            // Emojiyi bir "Fizik Objesi" olarak ekle
             playerSprite = this.physics.add.text(window.innerWidth / 2, window.innerHeight / 2 + 100, myEmoji, { fontSize: '55px' }).setOrigin(0.5);
             playerSprite.setCollideWorldBounds(true);
             
             spawnMob();
 
-            // Joystick Ayarları
             const joystickManager = nipplejs.create({
                 zone: document.getElementById('joystick-zone'),
                 mode: 'static',
@@ -264,38 +248,14 @@
                     const speed = 150 + (p.dex * 1.5); 
                     playerSprite.setVelocity(data.vector.x * speed, -data.vector.y * speed);
                     
-                    // Sağa sola dönerken tilt efekti
                     if(data.vector.x > 0) playerSprite.setAngle(15);
                     else if(data.vector.x < 0) playerSprite.setAngle(-15);
                 }
             });
-            
             joystickManager.on('end', () => {
                 playerSprite.setVelocity(0, 0);
                 playerSprite.setAngle(0);
             });
-        }
-
-
-            const joystickManager = nipplejs.create({
-                zone: document.getElementById('joystick-zone'),
-                mode: 'static',
-                position: { left: '50%', top: '50%' },
-                color: '#00f0ff',
-                size: 100
-            });
-
-            joystickManager.on('move', (evt, data) => {
-                if(data.vector) {
-                    const speed = 150 + (p.dex * 1.5); 
-                    playerSprite.setVelocity(data.vector.x * speed, -data.vector.y * speed);
-                    
-                    // Sağa sola dönerken görseli çevir (Flip)
-                    if(data.vector.x > 0) playerSprite.setFlipX(false);
-                    else if(data.vector.x < 0) playerSprite.setFlipX(true);
-                }
-            });
-            joystickManager.on('end', () => playerSprite.setVelocity(0, 0));
         }
 
         function spawnMob() {
@@ -303,12 +263,9 @@
             isMobDead = false;
             mobHP = 100 + (p.level * 40);
             
-            // Void Spider Yükleniyor
-            mobSprite = gameScene.physics.add.sprite(window.innerWidth / 2, window.innerHeight / 2 - 80, 'void_spider');
-            mobSprite.setScale(1.2);
-            
-            // Örümcek hafifçe aşağı yukarı hareket etsin (Nefes Alma Animasyonu)
-            gameScene.tweens.add({ targets: mobSprite, y: mobSprite.y + 10, yoyo: true, repeat: -1, duration: 1500 });
+            // Örümcek Emojisi
+            mobSprite = gameScene.physics.add.text(window.innerWidth / 2, window.innerHeight / 2 - 80, '🕷️', { fontSize: '70px' }).setOrigin(0.5);
+            gameScene.tweens.add({ targets: mobSprite, scaleX: 1.1, scaleY: 1.1, yoyo: true, repeat: -1, duration: 1000 });
         }
 
         function update() { }
@@ -349,7 +306,6 @@
             el.style.left = x + 'px'; el.style.top = y + 'px'; document.body.appendChild(el); setTimeout(() => el.remove(), 800);
         }
 
-        // --- DİĞER FONKSİYONLAR ---
         window.collectLoot = async () => {
             p.exp += 150; p.nxp += 50;  
             let target = 500 * Math.pow(p.level, 1.5);
