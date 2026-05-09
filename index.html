@@ -7,35 +7,40 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+    <!-- Joystick Kütüphanesi Eklendi -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.9.0/nipplejs.min.js"></script>
     <style>
         :root { --neon-green: #0f0; --neon-blue: #00f0ff; --neon-red: #ff003c; --dark-bg: #050505; --gold: #ffd700; }
         body { background: var(--dark-bg); color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; overflow: hidden; user-select: none; }
         
-        /* Phaser 2D Tuvali (En Arkada Olacak) */
+        /* Phaser 2D Tuvali */
         #game-container { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; }
 
-        /* Arayüz Elemanları (Tuvalin Üstünde Olacak) */
+        /* Joystick Alanı */
+        #joystick-zone { position: fixed; bottom: 80px; left: 20px; width: 120px; height: 120px; z-index: 1000; }
+
+        /* Arayüz Elemanları */
         .screen { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 3000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; }
         .hidden { display: none !important; }
         h2 { color: var(--neon-blue); text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 10px var(--neon-blue); }
         .card { background: #111; border: 1px solid #333; padding: 15px; margin: 8px; width: 80%; border-radius: 8px; cursor: pointer; color: var(--neon-green); font-weight: bold; }
         
-        /* HUD (Can ve Mana) */
-        #hud { position: fixed; top: 10px; left: 10px; z-index: 1000; background: rgba(0,0,0,0.85); padding: 12px; border-radius: 8px; border: 1px solid var(--neon-blue); min-width: 180px; }
+        /* HUD */
+        #hud { position: fixed; top: 10px; left: 10px; z-index: 1000; background: rgba(0,0,0,0.85); padding: 12px; border-radius: 8px; border: 1px solid var(--neon-blue); min-width: 180px; pointer-events: none; }
         .bar-container { width: 100%; height: 16px; background: #222; margin-bottom: 6px; border-radius: 4px; position: relative; border: 1px solid #444; }
         .bar-fill { height: 100%; width: 100%; transition: width 0.3s; }
         #hp-bar { background: linear-gradient(90deg, #ff003c, #80001e); } 
         #mp-bar { background: linear-gradient(90deg, #00f0ff, #005f73); }
         .bar-text { position: absolute; width: 100%; text-align: center; font-size: 11px; font-weight: bold; line-height: 16px; top: 0; text-shadow: 1px 1px #000; }
 
-        /* Loot Kutusu (HTML Olarak Phaser'ın Üstünde) */
+        /* Loot Kutusu */
         #html-loot-box { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 120px; height: 120px; background: rgba(255,215,0,0.15); border: 2px solid var(--gold); color: var(--gold); display: none; align-items: center; justify-content: center; font-weight: bold; z-index: 1500; border-radius: 10px; cursor: pointer; animation: pulse 1s infinite; text-shadow: 0 0 10px var(--gold); }
         
         /* Alt Menü */
         #menu { position: fixed; bottom: 20px; width: 100%; display: none; justify-content: center; gap: 10px; z-index: 1000; }
         .menu-btn { background: #111; border: 1px solid var(--neon-blue); padding: 12px 20px; border-radius: 6px; color: #fff; font-size: 12px; font-weight: bold; box-shadow: 0 0 10px rgba(0,240,255,0.2); cursor: pointer; }
 
-        /* Modallar (Stat ve Envanter) */
+        /* Modallar */
         .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-height: 80vh; background: rgba(10,10,10,0.98); border: 2px solid var(--neon-blue); z-index: 2000; display: none; flex-direction: column; padding: 15px; border-radius: 10px; }
         .inv-header { display: flex; gap: 5px; margin-bottom: 10px; }
         .inv-header button { flex: 1; padding: 10px; background: #222; color: #fff; border: 1px solid #444; border-radius: 4px; font-weight: bold; cursor: pointer; }
@@ -75,7 +80,6 @@
         <div class="card" onclick="finalize('Architect')">🛡️ ARCHITECT</div>
     </div>
 
-    <!-- HUD (Can & Mana) -->
     <div id="hud">
         <div id="p-info" style="font-size:13px; font-weight:bold; color:var(--neon-blue); margin-bottom:8px;">PILOT: ---</div>
         <div class="bar-container"><div id="hp-bar" class="bar-fill"></div><div class="bar-text" id="hp-text">--- / ---</div></div>
@@ -83,20 +87,19 @@
         <div style="font-size:12px; color:var(--neon-green); margin-top:5px; font-weight:bold;">LVL: <span id="lvl">1</span> | EXP: <span id="exp">0</span></div>
     </div>
 
-    <!-- Phaser 2D Tuvali -->
     <div id="game-container"></div>
     
-    <!-- HTML Loot Kutusu -->
+    <!-- Joystick'in Çıkacağı Alan -->
+    <div id="joystick-zone"></div>
+    
     <div id="html-loot-box" onclick="collectLoot()">DATA-CUBE<br>[AL]</div>
 
-    <!-- Alt Menü -->
     <div id="menu">
         <div class="menu-btn" onclick="openModal('char-panel')">STATS</div>
         <div class="menu-btn" onclick="openModal('inv-panel')">INV</div>
         <div class="menu-btn" onclick="town()" id="town-btn">TOWN</div>
     </div>
 
-    <!-- STAT PANELİ -->
     <div id="char-panel" class="modal">
         <div style="display:flex; justify-content:space-between; margin-bottom:15px; border-bottom:1px solid #333; padding-bottom:10px;">
             <span style="color:var(--neon-blue); font-weight:bold;">KARAKTER ANALİZİ</span>
@@ -106,7 +109,6 @@
         <div id="stat-content"></div>
     </div>
 
-    <!-- ENVANTER PANELİ -->
     <div id="inv-panel" class="modal">
         <div class="inv-header">
             <button id="tab-equip-btn" onclick="switchTab('equip')" class="active-tab">EKİPMAN</button>
@@ -122,25 +124,21 @@
     </div>
 
     <script>
-        // --- SUPABASE BAĞLANTISI ---
         const SUPABASE_URL = 'https://gdpiehrnpeiauhmaoumi.supabase.co';
         const SUPABASE_KEY = 'EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkcGllaHJucGVpYXVobWFvdW1pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEwMDk4MjcsImV4cCI6MjA4NjU4NTgyN30.iJHq9gnoPtBLaRuByLOV8VjesBL9qp1rQs1d4_fYJXM';
         let supabaseClient;
         try { supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY); } catch(e){}
         const tg = window.Telegram.WebApp;
 
-        // --- GLOBAL DEĞİŞKENLER ---
         let p = { id: 0, username: 'Pilot', str: 10, vit: 10, int_stat: 10, dex: 10, stat_points: 0, level: 1, exp: 0, nxp: 0, class: '---', race: '---' };
         let mobHP = 100;
         let inventory = [];
         
-        // Phaser Objeleri
         let gameScene;
         let playerSprite;
         let mobSprite;
         let isMobDead = false;
 
-        // --- ÇANTA OLUŞTURMA ---
         function buildBag() {
             const bag = document.getElementById('bag-view');
             bag.innerHTML = "";
@@ -151,12 +149,10 @@
             }
         }
 
-        // --- SİSTEM BAŞLATMA ---
         async function init() {
             tg.expand();
             const user = tg.initDataUnsafe?.user || { id: 12345, username: 'Test_Pilotu' };
             
-            // 3 Saniye Timeout
             let timeout = setTimeout(() => {
                 document.getElementById('loading-screen').classList.add('hidden');
                 document.getElementById('race-screen').classList.remove('hidden');
@@ -185,12 +181,13 @@
             document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
             document.getElementById('hud').style.display = 'block';
             document.getElementById('menu').style.display = 'flex';
+            document.getElementById('joystick-zone').style.display = 'block';
             buildBag(); 
             updateUI();
-            initPhaser(); // 2D Motoru Başlat
+            initPhaser(); 
         }
 
-        // --- PHASER.JS 2D MOTORU ---
+        // --- PHASER.JS MOTORU (FİZİK EKLENDİ) ---
         function initPhaser() {
             const config = {
                 type: Phaser.AUTO,
@@ -198,13 +195,16 @@
                 width: window.innerWidth,
                 height: window.innerHeight,
                 transparent: true,
+                physics: {
+                    default: 'arcade',
+                    arcade: { gravity: { y: 0 }, debug: false } // Fizik Motoru Açık
+                },
                 scene: { preload: preload, create: create, update: update }
             };
             new Phaser.Game(config);
         }
 
         function preload() {
-            // Şimdilik test için Phaser'ın kendi örnek resimleri
             this.load.image('player', 'https://labs.phaser.io/assets/sprites/phaser-dude.png');
             this.load.image('mob', 'https://labs.phaser.io/assets/sprites/space-baddie.png');
         }
@@ -212,12 +212,34 @@
         function create() {
             gameScene = this;
             
-            // Karakter
-            playerSprite = this.add.sprite(window.innerWidth / 2, window.innerHeight / 2 + 50, 'player');
+            // Karakter (Fizik motoruna bağlı, ekrandan dışarı çıkamaz)
+            playerSprite = this.physics.add.sprite(window.innerWidth / 2, window.innerHeight / 2 + 50, 'player');
             playerSprite.setScale(2);
+            playerSprite.setCollideWorldBounds(true);
 
-            // Canavar (Tıklanabilir)
             spawnMob();
+
+            // --- JOYSTICK ENTEGRASYONU ---
+            const joystickManager = nipplejs.create({
+                zone: document.getElementById('joystick-zone'),
+                mode: 'static',
+                position: { left: '50%', top: '50%' },
+                color: '#00f0ff'
+            });
+
+            // Joystick hareket ettiğinde karakteri yürüt
+            joystickManager.on('move', (evt, data) => {
+                if(data.vector) {
+                    // Karakterin hızı DEX statına bağlı olarak artar
+                    const speed = 150 + (p.dex * 1.5); 
+                    playerSprite.setVelocity(data.vector.x * speed, -data.vector.y * speed);
+                }
+            });
+
+            // Joystick bırakıldığında karakter dursun
+            joystickManager.on('end', () => {
+                playerSprite.setVelocity(0, 0);
+            });
         }
 
         function spawnMob() {
@@ -225,18 +247,17 @@
             isMobDead = false;
             mobHP = 100 + (p.level * 40);
             
-            mobSprite = gameScene.add.sprite(window.innerWidth / 2, window.innerHeight / 2 - 80, 'mob');
+            // Canavar da artık bir fizik objesi
+            mobSprite = gameScene.physics.add.sprite(window.innerWidth / 2, window.innerHeight / 2 - 80, 'mob');
             mobSprite.setScale(3);
-            mobSprite.setInteractive(); // Tıklanabilir yap
+            mobSprite.setInteractive();
             
-            // Canavara Tıklanınca Savaş Mekaniği Tetiklenir
             mobSprite.on('pointerdown', function (pointer) {
                 if(isMobDead) return;
                 
                 const dmg = 5 + (p.str * 1.5);
                 mobHP -= dmg;
                 
-                // Hasar yazısı (Phaser üstünde HTML olarak uçuşur)
                 const el = document.createElement('div'); 
                 el.className = 'floating-text'; 
                 el.innerText = `-${Math.floor(dmg)}`;
@@ -246,27 +267,23 @@
                 document.body.appendChild(el); 
                 setTimeout(() => el.remove(), 800);
 
-                // Sola sağa sallanma efekti (Vuruş Hissi)
                 gameScene.tweens.add({ targets: mobSprite, x: mobSprite.x + (Math.random() > 0.5 ? 10 : -10), yoyo: true, duration: 50 });
 
                 if (mobHP <= 0) {
                     isMobDead = true;
-                    mobSprite.setVisible(false); // Canavarı gizle
-                    document.getElementById('html-loot-box').style.display = 'flex'; // Ganimet kutusunu göster
+                    mobSprite.setVisible(false);
+                    document.getElementById('html-loot-box').style.display = 'flex'; 
                 }
             });
         }
 
-        function update() {
-            // Şimdilik karakter sabit, sonra joystick gelecek
-        }
+        function update() { }
 
-        // --- MEKANİKLER (GANİMET, STAT, ENVANTER) ---
+        // --- MEKANİKLER ---
         window.collectLoot = async () => {
             p.exp += 150; 
             p.nxp += 50;  
             
-            // LEVEL ATALAMA
             let target = 500 * Math.pow(p.level, 1.5);
             if (p.exp >= target) {
                 p.level++;
@@ -274,14 +291,13 @@
                 alert(`SİSTEM GÜNCELLENDİ: LEVEL ${p.level} OLDUN!`);
             }
 
-            // %60 Şansla Eşya Düşür
             if (Math.random() < 0.6) {
                 let items = [{name:"Siber-Kablo", stackable:true}, {name:"Enerji Hücresi", stackable:true}, {name:"Slayer Kılıcı", stackable:false}];
                 addItem(items[Math.floor(Math.random() * items.length)]);
             }
 
-            document.getElementById('html-loot-box').style.display = 'none'; // Kutuyu Gizle
-            spawnMob(); // Yeni Canavar Doğur
+            document.getElementById('html-loot-box').style.display = 'none'; 
+            spawnMob(); 
             updateUI();
             
             try { await supabaseClient.from('pilots_data').update(p).eq('id', p.id); } catch(e){}
@@ -336,7 +352,6 @@
             try { await supabaseClient.from('pilots_data').update(p).eq('id', p.id); } catch(e){}
         };
 
-        // --- MENÜ VE MODAL KONTROLLERİ ---
         window.switchTab = (t) => {
             document.getElementById('equip-view').style.display = t === 'equip' ? 'grid' : 'none';
             document.getElementById('bag-view').style.display = t === 'bag' ? 'grid' : 'none';
