@@ -39,6 +39,14 @@
         #html-loot-box { position: fixed; top: 40%; left: 50%; transform: translate(-50%, -50%); width: 100px; height: 100px; border: 2px solid var(--gold); color: var(--gold); display: none; flex-direction: column; align-items: center; justify-content: center; font-weight: bold; z-index: 1500; border-radius: 10px; animation: pulse 1s infinite; background: rgba(0,0,0,0.5); cursor: pointer; }
         
         .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-height: 80vh; background: rgba(10,10,10,0.98); border: 2px solid var(--neon-blue); z-index: 6000; display: none; flex-direction: column; padding: 15px; border-radius: 10px; }
+        
+        /* GERİ GETİRİLEN 9 SLOTLU EKİPMAN CSS'LERİ */
+        .inv-header { display: flex; gap: 5px; margin-bottom: 10px; }
+        .inv-header button { flex: 1; padding: 10px; background: #222; color: #fff; border: 1px solid #444; border-radius: 4px; font-weight: bold; cursor: pointer; }
+        .active-tab { background: var(--neon-blue) !important; color: #000 !important; }
+        .equip-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px; }
+        .equip-slot { height: 60px; background: #151515; border: 1px solid #444; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 9px; color: #666; }
+
         .inv-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; overflow-y: auto; max-height: 250px; }
         .bag-slot { height: 45px; background: #151515; border: 1px solid #333; display: flex; align-items: center; justify-content: center; font-size: 8px; text-align: center; color: var(--neon-blue); border-radius: 4px; }
         .stat-row { display: flex; justify-content: space-between; margin-bottom: 10px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 6px; align-items: center; }
@@ -109,10 +117,19 @@
 
     <div id="inv-panel" class="modal">
         <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-            <span style="color:var(--neon-blue); font-weight:bold;">ENVANTER (50 Slot)</span>
+            <span style="color:var(--neon-blue); font-weight:bold;">SİBER-KASA</span>
             <span onclick="closeModals()" style="color:red; cursor:pointer; font-weight:bold;">[X]</span>
         </div>
-        <div id="bag-view" class="inv-grid"></div>
+        <div class="inv-header">
+            <button id="tab-equip-btn" onclick="switchTab('equip')" class="active-tab">EKİPMAN</button>
+            <button id="tab-bag-btn" onclick="switchTab('bag')">ÇANTA (50)</button>
+        </div>
+        <div id="equip-view" class="equip-grid">
+            <div class="equip-slot">KAFALIK</div><div class="equip-slot">KOLYE</div><div class="equip-slot">GÖĞÜS</div>
+            <div class="equip-slot">KOLLUK</div><div class="equip-slot">KEMER</div><div class="equip-slot">DONLUK</div>
+            <div class="equip-slot">YÜZÜK 1</div><div class="equip-slot">AYAKLIK</div><div class="equip-slot">YÜZÜK 2</div>
+        </div>
+        <div id="bag-view" class="inv-grid" style="display:none;"></div>
     </div>
 
     <script>
@@ -122,7 +139,6 @@
         try { supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY); } catch(e){}
         const tg = window.Telegram.WebApp;
 
-        // Fallback değerlerle p objesini oluşturuyoruz
         let p = { id: 0, username: 'Pilot', str: 10, vit: 10, int_stat: 10, dex: 10, stat_points: 0, level: 1, exp: 0, nxp: 0, class: 'Slayer', race: 'Human' };
         let mobHP = 100;
         let inventory = [];
@@ -143,7 +159,6 @@
                     const { data, error } = await supabaseClient.from('pilots_data').select('*').eq('id', user.id).single();
                     clearTimeout(timeout);
                     if (data) { 
-                        // Veritabanından gelen eksik verileri tamamla (ÇÖKMEYİ ÖNLER)
                         p = { ...p, ...data };
                         startGame(); 
                     } else { 
@@ -201,7 +216,6 @@
                 'AI': { 'Slayer':'🦾', 'Technomancer':'🛸', 'Data-Sniper':'🛰️', 'Architect':'🕋' } 
             };
             
-            // Hata Geçirmez Irk ve Sınıf Seçimi
             let safeRace = (p.race === 'Human' || p.race === 'AI') ? p.race : 'Human';
             let safeClass = ['Slayer', 'Technomancer', 'Data-Sniper', 'Architect'].includes(p.class) ? p.class : 'Slayer';
             let myEmoji = emojis[safeRace][safeClass] || '🤖';
@@ -224,8 +238,6 @@
         function spawnMob() {
             if(mobSprite) mobSprite.destroy();
             isMobDead = false;
-            
-            // p.level undefined ise çökmesini önle
             let currentLevel = p.level || 1;
             mobHP = 100 + (currentLevel * 40);
             
@@ -289,7 +301,6 @@
         }
 
         function updateUI() {
-            // Null korumaları eklendi
             let safeName = p.username ? String(p.username).toUpperCase() : "PILOT";
             let safeRace = p.race || "Human";
             let safeClass = p.class || "Slayer";
@@ -325,6 +336,13 @@
             try { await supabaseClient.from('pilots_data').update(p).eq('id', p.id); } catch(e){} 
         };
         
+        window.switchTab = (t) => {
+            document.getElementById('equip-view').style.display = t === 'equip' ? 'grid' : 'none';
+            document.getElementById('bag-view').style.display = t === 'bag' ? 'grid' : 'none';
+            document.getElementById('tab-equip-btn').className = t === 'equip' ? 'active-tab' : '';
+            document.getElementById('tab-bag-btn').className = t === 'bag' ? 'active-tab' : '';
+        };
+
         window.town = () => alert("TOWN: NEXUS CORE YAPIM AŞAMASINDA");
         window.openModal = (id) => { document.getElementById(id).style.display = 'flex'; };
         window.closeModals = () => { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); };
