@@ -13,30 +13,45 @@
         /* Ekranlar */
         .screen { position: fixed; inset: 0; background: #000; z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; }
         .hidden { display: none !important; }
-        h2 { color: var(--neon-blue); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 25px; text-shadow: 0 0 10px var(--neon-blue); }
-        .card { background: #111; border: 1px solid #333; padding: 15px; margin: 8px; width: 80%; border-radius: 8px; cursor: pointer; color: var(--neon-green); font-weight: bold; }
         
         /* HUD */
-        #hud { position: fixed; top: 10px; left: 10px; z-index: 100; display: none; background: rgba(0,0,0,0.8); padding: 10px; border-radius: 8px; border: 1px solid var(--neon-blue); }
-        .bar-container { width: 150px; height: 12px; background: #222; margin-bottom: 5px; border-radius: 3px; position: relative; overflow: hidden; }
+        #hud { position: fixed; top: 10px; left: 10px; z-index: 100; display: none; background: rgba(0,0,0,0.9); padding: 12px; border-radius: 8px; border: 1px solid var(--neon-blue); min-width: 180px; }
+        .bar-container { width: 100%; height: 16px; background: #222; margin-bottom: 6px; border-radius: 4px; position: relative; overflow: hidden; border: 1px solid #333; }
         .bar-fill { height: 100%; width: 100%; transition: width 0.3s; }
-        #hp-bar { background: var(--neon-red); } #mp-bar { background: var(--neon-blue); }
+        #hp-bar { background: linear-gradient(90deg, #ff003c, #80001e); } 
+        #mp-bar { background: linear-gradient(90deg, #00f0ff, #005f73); }
+        .bar-text { position: absolute; width: 100%; text-align: center; font-size: 10px; font-weight: bold; line-height: 16px; top: 0; text-shadow: 1px 1px #000; }
 
         /* Oyun Dünyası */
         #game-world { height: 100vh; display: none; flex-direction: column; align-items: center; justify-content: center; position: relative; }
-        #target-mob { width: 150px; height: 150px; border: 2px solid var(--neon-red); border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; background: rgba(255,0,60,0.1); }
-        #loot-box { width: 100px; height: 100px; border: 2px solid var(--gold); display: none; align-items: center; justify-content: center; cursor: pointer; color: var(--gold); font-weight: bold; }
+        #target-mob { width: 160px; height: 160px; border: 2px solid var(--neon-red); border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; background: rgba(255,0,60,0.1); transition: 0.1s; }
+        #target-mob:active { transform: scale(0.95); }
+        #loot-box { width: 110px; height: 110px; border: 2px solid var(--gold); display: none; align-items: center; justify-content: center; cursor: pointer; color: var(--gold); font-weight: bold; border-radius: 10px; animation: pulse 1s infinite; }
         
         /* Menü */
-        #menu { position: fixed; bottom: 20px; width: 100%; display: none; justify-content: center; gap: 10px; z-index: 500; }
-        .menu-btn { background: #111; border: 1px solid var(--neon-blue); padding: 10px 15px; border-radius: 5px; color: #fff; font-size: 11px; text-transform: uppercase; }
+        #menu { position: fixed; bottom: 25px; width: 100%; display: none; justify-content: center; gap: 10px; z-index: 500; }
+        .menu-btn { background: #111; border: 1px solid var(--neon-blue); padding: 12px 18px; border-radius: 6px; color: #fff; font-size: 11px; font-weight: bold; }
 
         /* Modallar */
-        .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-height: 80vh; background: #0a0a0a; border: 2px solid var(--neon-blue); z-index: 2000; display: none; flex-direction: column; padding: 15px; border-radius: 10px; }
-        .inv-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; overflow-y: auto; }
-        .bag-slot { height: 50px; background: #151515; border: 1px solid #333; display: flex; align-items: center; justify-content: center; font-size: 8px; text-align: center; color: #aaa; }
-        .stat-row { display: flex; justify-content: space-between; margin-bottom: 10px; padding: 5px; background: #111; }
-        .plus-btn { background: var(--neon-green); border: none; padding: 5px 10px; border-radius: 3px; font-weight: bold; }
+        .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-height: 85vh; background: rgba(10,10,10,0.98); border: 2px solid var(--neon-blue); z-index: 2000; display: none; flex-direction: column; padding: 20px; border-radius: 12px; }
+        .inv-header { display: flex; gap: 5px; margin-bottom: 10px; }
+        .inv-header button { flex: 1; padding: 8px; font-size: 10px; background: #222; color: #fff; border: 1px solid #444; border-radius: 4px; }
+        .active-tab { background: var(--neon-blue) !important; color: #000 !important; }
+
+        /* Ekipman Grid */
+        .equip-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 15px; }
+        .equip-slot { height: 60px; background: #151515; border: 1px solid #444; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 8px; text-align: center; color: #666; }
+
+        /* Çanta Grid */
+        .inv-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; overflow-y: auto; max-height: 250px; }
+        .bag-slot { height: 50px; background: #151515; border: 1px solid #333; display: flex; align-items: center; justify-content: center; font-size: 8px; text-align: center; color: var(--neon-blue); border-radius: 4px; padding: 2px; }
+
+        .stat-row { display: flex; justify-content: space-between; margin-bottom: 12px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 6px; align-items: center; }
+        .plus-btn { background: var(--neon-green); border: none; padding: 8px 14px; border-radius: 4px; font-weight: bold; cursor: pointer; }
+        
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        .floating-text { position: absolute; font-weight: bold; pointer-events: none; animation: floatUp 0.8s forwards; z-index: 1000; font-size: 22px; }
+        @keyframes floatUp { from { opacity:1; transform:translateY(0); } to { opacity:0; transform:translateY(-70px); } }
     </style>
 </head>
 <body>
@@ -45,29 +60,29 @@
 
     <div id="race-screen" class="screen hidden">
         <h2>IRKINI SEÇ</h2>
-        <div class="card" onclick="setRace('Human')">HUMAN RESISTANCE ✊</div>
-        <div class="card" onclick="setRace('AI')">AI SENTINELS 🤖</div>
+        <div onclick="setRace('Human')" style="background:#111; border:1px solid #0f0; padding:15px; width:80%; margin:10px; border-radius:10px;">HUMAN ✊</div>
+        <div onclick="setRace('AI')" style="background:#111; border:1px solid #00f0ff; padding:15px; width:80%; margin:10px; border-radius:10px;">AI SENTINEL 🤖</div>
     </div>
 
     <div id="class-screen" class="screen hidden">
         <h2>SINIFINI SEÇ</h2>
-        <div class="card" onclick="finalize('Slayer')">⚔️ SLAYER</div>
-        <div class="card" onclick="finalize('Technomancer')">🔮 TECHNOMANCER</div>
-        <div class="card" onclick="finalize('Data-Sniper')">🏹 DATA-SNIPER</div>
-        <div class="card" onclick="finalize('Architect')">🛡️ ARCHITECT</div>
+        <div onclick="finalize('Slayer')" style="background:#111; border:1px solid #333; padding:10px; width:80%; margin:5px;">⚔️ SLAYER</div>
+        <div onclick="finalize('Technomancer')" style="background:#111; border:1px solid #333; padding:10px; width:80%; margin:5px;">🔮 TECHNOMANCER</div>
+        <div onclick="finalize('Data-Sniper')" style="background:#111; border:1px solid #333; padding:10px; width:80%; margin:5px;">🏹 DATA-SNIPER</div>
+        <div onclick="finalize('Architect')" style="background:#111; border:1px solid #333; padding:10px; width:80%; margin:5px;">🛡️ ARCHITECT</div>
     </div>
 
     <div id="hud">
-        <div id="p-info" style="font-size:10px; color:var(--neon-blue);">---</div>
-        <div class="bar-container"><div id="hp-bar" class="bar-fill"></div></div>
-        <div class="bar-container"><div id="mp-bar" class="bar-fill"></div></div>
-        <div style="font-size:10px;">LVL: <span id="lvl">1</span> | NXP: <span id="nxp">0</span></div>
+        <div id="p-info" style="font-size:12px; font-weight:bold; color:var(--neon-blue); margin-bottom:8px;">PILOT: ---</div>
+        <div class="bar-container"><div id="hp-bar" class="bar-fill"></div><div class="bar-text" id="hp-text">100 / 100</div></div>
+        <div class="bar-container"><div id="mp-bar" class="bar-fill"></div><div class="bar-text" id="mp-text">50 / 50</div></div>
+        <div style="font-size:11px; color:var(--neon-green); margin-top:5px;">LVL: <span id="lvl">1</span> | EXP: <span id="exp">0</span></div>
     </div>
 
     <div id="game-world">
-        <div id="target-mob" onclick="attackMob()">
+        <div id="target-mob" onclick="attackMob(event)">
             <span style="font-size:50px;">🕷️</span>
-            <span style="color:var(--neon-red); font-weight:bold;">VOID-SPIDER</span>
+            <span style="color:var(--neon-red); font-weight:bold; margin-top:10px;">VOID-SPIDER</span>
         </div>
         <div id="loot-box" onclick="collectLoot()">DATA-CUBE</div>
     </div>
@@ -78,20 +93,31 @@
         <div class="menu-btn" onclick="town()" id="town-btn">TOWN</div>
     </div>
 
+    <!-- STAT MODAL -->
     <div id="char-panel" class="modal">
-        <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-            <span>STATS (PUAN: <span id="stat-pts">0</span>)</span>
+        <div style="display:flex; justify-content:space-between; margin-bottom:15px; border-bottom:1px solid #333; padding-bottom:10px;">
+            <span style="color:var(--neon-blue); font-weight:bold;">KARAKTER ANALİZİ</span>
             <span onclick="closeModals()" style="color:red; cursor:pointer;">[X]</span>
         </div>
+        <div style="color:var(--neon-green); margin-bottom:15px; font-weight:bold;">BOŞ PUAN: <span id="stat-pts">0</span></div>
         <div id="stat-content"></div>
     </div>
 
+    <!-- INVENTORY MODAL -->
     <div id="inv-panel" class="modal">
-        <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-            <span>ENVANTER (50 Slot)</span>
-            <span onclick="closeModals()" style="color:red; cursor:pointer;">[X]</span>
+        <div class="inv-header">
+            <button id="tab-equip-btn" onclick="switchTab('equip')" class="active-tab">EKİPMAN</button>
+            <button id="tab-bag-btn" onclick="switchTab('bag')">ÇANTA (50)</button>
+            <button onclick="closeModals()" style="max-width:40px; color:red; font-weight:bold;">X</button>
         </div>
-        <div id="tab-bag" class="inv-grid"></div>
+        
+        <div id="equip-view" class="equip-grid">
+            <div class="equip-slot">KAFALIK</div><div class="equip-slot">KOLYE</div><div class="equip-slot">GÖĞÜS</div>
+            <div class="equip-slot">KOLLUK</div><div class="equip-slot">KEMER</div><div class="equip-slot">DONLUK</div>
+            <div class="equip-slot">YÜZÜK 1</div><div class="equip-slot">AYAKLIK</div><div class="equip-slot">YÜZÜK 2</div>
+        </div>
+        
+        <div id="bag-view" class="inv-grid" style="display:none;"></div>
     </div>
 
     <script>
@@ -100,32 +126,23 @@
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         const tg = window.Telegram.WebApp;
 
-        let p = { id:123, username:'Pilot', str:10, vit:10, int_stat:10, dex:10, stat_points:0, level:1, exp:0, nxp:0, class:'Slayer', race:'Human' };
+        let p = { id:0, username:'Pilot', str:10, vit:10, int_stat:10, dex:10, stat_points:0, level:1, exp:0, nxp:0, class:'---', race:'---' };
         let mobHP = 100;
         let inventory = [];
-
-        // Çanta oluşturma
-        const bagUI = document.getElementById('tab-bag');
-        for(let i=0; i<50; i++) {
-            let s = document.createElement('div');
-            s.className = 'bag-slot'; s.id = `slot-${i}`; s.innerText = "--";
-            bagUI.appendChild(s);
-        }
 
         async function init() {
             tg.expand();
             const user = tg.initDataUnsafe?.user || { id: 12345, username: 'Test_Pilotu' };
-            try {
-                const { data } = await supabaseClient.from('pilots_data').select('*').eq('id', user.id).single();
-                if (data) { p = data; startGame(); } 
-                else { document.getElementById('loading-screen').classList.add('hidden'); document.getElementById('race-screen').classList.remove('hidden'); }
-            } catch(e) { startGame(); }
+            const { data } = await supabaseClient.from('pilots_data').select('*').eq('id', user.id).single();
+            if (data) { p = data; startGame(); } 
+            else { document.getElementById('loading-screen').classList.add('hidden'); document.getElementById('race-screen').classList.remove('hidden'); }
         }
 
         window.setRace = (r) => { p.race = r; document.getElementById('race-screen').classList.add('hidden'); document.getElementById('class-screen').classList.remove('hidden'); };
-        
         window.finalize = async (c) => {
-            p.class = c; await supabaseClient.from('pilots_data').upsert(p); startGame();
+            const user = tg.initDataUnsafe?.user || { id: 12345, username: 'Test_Pilotu' };
+            p.class = c; p.id = user.id; p.username = user.username || user.first_name;
+            await supabaseClient.from('pilots_data').upsert(p); startGame();
         };
 
         function startGame() {
@@ -133,42 +150,61 @@
             document.getElementById('hud').style.display = 'block';
             document.getElementById('game-world').style.display = 'flex';
             document.getElementById('menu').style.display = 'flex';
-            updateUI();
+            buildBag(); updateUI();
         }
 
-        function attackMob() {
+        function buildBag() {
+            const bag = document.getElementById('bag-view');
+            bag.innerHTML = "";
+            for(let i=0; i<50; i++) {
+                let s = document.createElement('div');
+                s.className = 'bag-slot'; s.id = `slot-${i}`; s.innerText = "--";
+                bag.appendChild(s);
+            }
+        }
+
+        window.attackMob = (e) => {
             const dmg = 5 + (p.str * 1.5);
             mobHP -= dmg;
-            if (mobHP <= 0) {
-                document.getElementById('target-mob').style.display = 'none';
-                document.getElementById('loot-box').style.display = 'flex';
-            }
+            const el = document.createElement('div'); el.className = 'floating-text'; el.innerText = `-${Math.floor(dmg)}`;
+            el.style.color = "var(--neon-red)"; el.style.left = e.clientX + 'px'; el.style.top = e.clientY + 'px';
+            document.body.appendChild(el); setTimeout(() => el.remove(), 800);
+            if (mobHP <= 0) { document.getElementById('target-mob').style.display = 'none'; document.getElementById('loot-box').style.display = 'flex'; }
         }
 
         window.collectLoot = async () => {
-            p.nxp += 60; p.exp += 40;
-            if (Math.random() < 0.5) {
-                let items = [{name:"Siber-Atık", stackable:true}, {name:"Veri Diski", stackable:true}, {name:"Slayer Kılıcı", stackable:false}];
-                addItemToInventory(items[Math.floor(Math.random() * items.length)]);
+            p.exp += 150; // Ödül EXP
+            p.nxp += 50;  // Ödül NXP
+            
+            // LEVEL ATALAMA MANTIĞI
+            let target = 500 * Math.pow(p.level, 1.5);
+            if (p.exp >= target) {
+                p.level++;
+                p.stat_points += 5;
+                alert(`TEBRİKLER! LEVEL ${p.level} OLDUN!`);
             }
-            mobHP = 100 + (p.level * 30);
+
+            if (Math.random() < 0.6) {
+                let items = [{name:"Siber-Kablo", stackable:true}, {name:"Veri Diski", stackable:true}, {name:"Slayer Kılıcı", stackable:false}];
+                addItem(items[Math.floor(Math.random() * items.length)]);
+            }
+
+            mobHP = 100 + (p.level * 40);
             document.getElementById('target-mob').style.display = 'flex';
             document.getElementById('loot-box').style.display = 'none';
-            updateUI();
             await supabaseClient.from('pilots_data').update(p).eq('id', p.id);
+            updateUI();
         };
 
-        function addItemToInventory(item) {
+        function addItem(item) {
             if (item.stackable) {
-                let existing = inventory.find(i => i.name === item.name);
-                if (existing) existing.count++; else inventory.push({ ...item, count: 1 });
-            } else {
-                inventory.push({ ...item, count: 1 });
-            }
-            updateInventoryUI();
+                let exist = inventory.find(i => i.name === item.name);
+                if (exist) exist.count++; else inventory.push({ ...item, count: 1 });
+            } else { inventory.push({ ...item, count: 1 }); }
+            updateBagUI();
         }
 
-        function updateInventoryUI() {
+        function updateBagUI() {
             for(let i=0; i<50; i++) document.getElementById(`slot-${i}`).innerText = "--";
             inventory.forEach((item, idx) => {
                 if(idx < 50) document.getElementById(`slot-${idx}`).innerText = item.stackable ? `${item.name} x${item.count}` : item.name;
@@ -176,29 +212,58 @@
         }
 
         function updateUI() {
-            document.getElementById('p-info').innerText = `${p.username} [${p.class}]`;
+            document.getElementById('p-info').innerText = `PILOT: ${p.username}`;
             document.getElementById('lvl').innerText = p.level;
-            document.getElementById('nxp').innerText = p.nxp;
+            document.getElementById('exp').innerText = p.exp;
             document.getElementById('stat-pts').innerText = p.stat_points;
+
+            const maxHP = 100 + (p.vit * 20);
+            const maxMP = 50 + (p.int_stat * 10);
+            document.getElementById('hp-bar').style.width = "100%";
+            document.getElementById('mp-bar').style.width = "100%";
+            document.getElementById('hp-text').innerText = `${maxHP} / ${maxHP}`;
+            document.getElementById('mp-text').innerText = `${maxMP} / ${maxMP}`;
+            
             renderStats();
         }
 
         function renderStats() {
             const cont = document.getElementById('stat-content');
-            cont.innerHTML = ['str','dex','int_stat','vit'].map(s => `
+            const stats = [
+                {id:'str', n:'STR (GÜÇ)'}, {id:'dex', n:'DEX (HIZ)'}, 
+                {id:'int_stat', n:'INT (ZEKA)'}, {id:'vit', n:'VIT (HP/CAN)'}
+            ];
+            cont.innerHTML = stats.map(s => `
                 <div class="stat-row">
-                    <span>${s.toUpperCase()}: ${p[s]}</span>
-                    ${p.stat_points>0 ? `<button class="plus-btn" onclick="upStat('${s}')">+</button>` : ''}
+                    <span>${s.n}: <b>${p[s.id]}</b></span>
+                    ${p.stat_points > 0 ? `<button class="plus-btn" onclick="upStat('${s.id}')">+</button>` : ''}
                 </div>`).join('');
         }
 
         window.upStat = async (s) => {
-            p[s]++; p.stat_points--; updateUI(); await supabaseClient.from('pilots_data').update(p).eq('id', p.id);
+            p[s]++; p.stat_points--; updateUI();
+            await supabaseClient.from('pilots_data').update(p).eq('id', p.id);
+        };
+
+        window.switchTab = (t) => {
+            document.getElementById('equip-view').style.display = t === 'equip' ? 'grid' : 'none';
+            document.getElementById('bag-view').style.display = t === 'bag' ? 'grid' : 'none';
+            document.getElementById('tab-equip-btn').className = t === 'equip' ? 'active-tab' : '';
+            document.getElementById('tab-bag-btn').className = t === 'bag' ? 'active-tab' : '';
+        };
+
+        window.town = () => {
+            let btn = document.getElementById('town-btn');
+            let c = 3;
+            btn.innerText = `BAĞLANIYOR... ${c}`;
+            let t = setInterval(() => {
+                c--; btn.innerText = `BAĞLANIYOR... ${c}`;
+                if(c <= 0) { clearInterval(t); btn.innerText = "TOWN"; alert("NEXUS CORE'A IŞINLANDIN!"); }
+            }, 1000);
         };
 
         window.openModal = (id) => { document.getElementById(id).style.display = 'flex'; };
         window.closeModals = () => { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); };
-        window.town = () => alert("Nexus Core'a Işınlandın!");
 
         init();
     </script>
