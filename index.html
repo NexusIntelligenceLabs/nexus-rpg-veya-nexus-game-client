@@ -223,17 +223,59 @@
         function create() {
             gameScene = this;
             
-            // Karakteri Seçtiği Sınıfa Göre Yükle
-            let spriteKey = p.class && p.class !== '---' ? `class_${p.class}` : 'fallback';
-            playerSprite = this.physics.add.sprite(window.innerWidth / 2, window.innerHeight / 2 + 100, spriteKey);
-            
-            // Görsel boyutlarını ayarla (Flat vectorlar genelde küçüktür, biraz büyütüyoruz)
-            if(p.class === 'Slayer' || p.class === 'Architect') playerSprite.setScale(1.5);
-            else playerSprite.setScale(1);
-            
+            // IRK VE SINIFA GÖRE ÇİFT KATMANLI GÖRSEL SEÇİMİ
+            let raceClassEmojis = {
+                'Human': {
+                    'Slayer': '🥷',         // Ninja/Sokak Savaşçısı
+                    'Technomancer': '🧑‍💻',  // Hacker/Mühendis
+                    'Data-Sniper': '👁️‍🗨️',   // Hedef Gözü/Nişancı
+                    'Architect': '🛡️'       // Kalkanlı Koruyucu
+                },
+                'AI': {
+                    'Slayer': '🦾',         // Mekanik Kesici Kol
+                    'Technomancer': '🛸',   // Uçan Veri Dronu
+                    'Data-Sniper': '🛰️',    // Yörünge Silahı
+                    'Architect': '🕋'       // Aşılmaz Veri Küpü
+                }
+            };
+
+            // Oyuncunun ırk ve sınıfını kontrol et, yoksa varsayılan ata
+            let myRace = p.race && p.race !== '---' ? p.race : 'Human';
+            let myClass = p.class && p.class !== '---' ? p.class : 'Slayer';
+            let myEmoji = raceClassEmojis[myRace][myClass] || '❓';
+
+            // Karakteri ekrana bas
+            playerSprite = this.physics.add.text(window.innerWidth / 2, window.innerHeight / 2 + 100, myEmoji, { fontSize: '55px' }).setOrigin(0.5);
             playerSprite.setCollideWorldBounds(true);
             
             spawnMob();
+
+            // Joystick Ayarları
+            const joystickManager = nipplejs.create({
+                zone: document.getElementById('joystick-zone'),
+                mode: 'static',
+                position: { left: '50%', top: '50%' },
+                color: '#00f0ff',
+                size: 100
+            });
+
+            joystickManager.on('move', (evt, data) => {
+                if(data.vector) {
+                    const speed = 150 + (p.dex * 1.5); 
+                    playerSprite.setVelocity(data.vector.x * speed, -data.vector.y * speed);
+                    
+                    // Sağa sola dönerken tilt efekti
+                    if(data.vector.x > 0) playerSprite.setAngle(15);
+                    else if(data.vector.x < 0) playerSprite.setAngle(-15);
+                }
+            });
+            
+            joystickManager.on('end', () => {
+                playerSprite.setVelocity(0, 0);
+                playerSprite.setAngle(0);
+            });
+        }
+
 
             const joystickManager = nipplejs.create({
                 zone: document.getElementById('joystick-zone'),
