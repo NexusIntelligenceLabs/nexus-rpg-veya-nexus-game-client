@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nexus Intelligence - FIX v2.1</title>
+    <title>Nexus Intelligence - Full Alpha v2.2</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
@@ -12,46 +12,75 @@
         :root { --neon-green: #0f0; --neon-blue: #00f0ff; --neon-red: #ff003c; --dark-bg: #050505; --gold: #ffd700; }
         body { background: var(--dark-bg); color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; overflow: hidden; user-select: none; touch-action: none; }
         #game-container { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; }
+        
+        /* SEÇİM EKRANLARI */
+        .screen { position: fixed; inset: 0; background: #000; z-index: 9000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; }
+        .card { background: #111; border: 1px solid var(--neon-blue); padding: 20px; margin: 10px; width: 80%; border-radius: 12px; cursor: pointer; color: var(--neon-blue); font-weight: bold; box-shadow: 0 0 10px rgba(0,240,255,0.2); }
+        .card:active { transform: scale(0.95); background: var(--neon-blue); color: #000; }
+        .hidden { display: none !important; }
+
+        /* HUD & BARS (YAZILAR ÜSTTE) */
+        #hud { position: fixed; top: 10px; left: 10px; z-index: 2000; background: rgba(0,0,0,0.85); padding: 12px; border-radius: 10px; border: 1px solid var(--neon-blue); min-width: 180px; }
+        .bar-container { width: 100%; height: 20px; background: #222; margin-bottom: 8px; border-radius: 5px; position: relative; border: 1px solid #444; overflow: hidden; }
+        .bar-fill { height: 100%; transition: width 0.3s; width: 100%; }
+        #hp-bar { background: linear-gradient(90deg, #ff003c, #80001e); } 
+        #mp-bar { background: linear-gradient(90deg, #00f0ff, #005f73); }
+        .bar-text { position: absolute; width: 100%; text-align: center; font-size: 11px; font-weight: bold; line-height: 20px; color: #fff; text-shadow: 1px 1px 2px #000; z-index: 10; top: 0; left: 0; }
+
+        /* KASA (INV) MODAL */
+        .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; background: #0a0a0a; border: 2px solid var(--neon-blue); z-index: 5000; display: none; flex-direction: column; padding: 15px; border-radius: 12px; box-shadow: 0 0 30px #000; }
+        .inv-tabs { display: flex; gap: 5px; margin-bottom: 10px; }
+        .inv-tabs button { flex: 1; padding: 10px; background: #222; color: #fff; border: 1px solid #444; cursor: pointer; font-weight: bold; }
+        .active-tab { background: var(--neon-blue) !important; color: #000 !important; }
+        
+        .equip-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 10px; }
+        .equip-slot { height: 60px; background: #151515; border: 1px solid #333; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 9px; color: #666; }
+        .bag-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; max-height: 200px; overflow-y: auto; padding: 5px; }
+        .bag-slot { height: 45px; background: #151515; border: 1px solid #222; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 8px; color: #444; }
+
+        /* DİĞERLERİ */
+        #menu { position: fixed; top: 10px; right: 10px; z-index: 2000; display: flex; gap: 5px; }
+        .menu-btn { background: rgba(20,20,20,0.9); border: 1px solid var(--neon-blue); padding: 8px 12px; border-radius: 6px; color: #fff; font-size: 11px; font-weight: bold; }
         #joystick-zone { position: fixed; bottom: 40px; left: 30px; width: 120px; height: 120px; z-index: 1000; }
-        #action-bar { position: fixed; bottom: 20px; right: 20px; z-index: 1000; display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+        #action-bar { position: fixed; bottom: 20px; right: 20px; z-index: 1000; display: none; flex-direction: column; align-items: flex-end; gap: 10px; }
         .skills-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
-        .skill-btn { width: 50px; height: 50px; background: rgba(17,17,17,0.9); border: 1px solid var(--neon-blue); border-radius: 8px; color: #fff; font-size: 10px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .attack-btn { width: 90px; height: 90px; background: rgba(255,0,60,0.1); border: 2px solid var(--neon-red); border-radius: 50%; color: var(--neon-red); font-weight: bold; cursor: pointer; box-shadow: 0 0 15px rgba(255,0,60,0.3); }
-        
-        /* HUD & BARS */
-        #hud { position: fixed; top: 10px; left: 10px; z-index: 2000; background: rgba(0,0,0,0.8); padding: 10px; border-radius: 8px; border: 1px solid var(--neon-blue); min-width: 180px; }
-        .bar-container { width: 100%; height: 16px; background: #222; margin-bottom: 6px; border-radius: 4px; position: relative; border: 1px solid #444; }
-        .bar-fill { height: 100%; transition: width 0.2s; }
-        #hp-bar { background: linear-gradient(90deg, #ff003c, #80001e); width: 100%; } 
-        #mp-bar { background: linear-gradient(90deg, #00f0ff, #005f73); width: 100%; }
-        .bar-text { position: absolute; width: 100%; text-align: center; font-size: 10px; font-weight: bold; line-height: 16px; color: #fff; z-index: 10; }
-
-        /* MODALS */
-        .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 85%; background: rgba(10,10,10,0.95); border: 2px solid var(--neon-blue); z-index: 5000; display: none; flex-direction: column; padding: 15px; border-radius: 12px; }
-        .stat-row { display: flex; justify-content: space-between; margin-bottom: 10px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 6px; align-items: center; }
-        .plus-btn { background: var(--neon-green); color: #000; border: none; padding: 5px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; }
-        
-        #menu { position: fixed; top: 10px; right: 10px; z-index: 2000; display: flex; gap: 6px; }
-        .menu-btn { background: rgba(17,17,17,0.9); border: 1px solid var(--neon-blue); padding: 8px 12px; border-radius: 6px; color: #fff; font-size: 10px; cursor: pointer; }
-
-        #html-loot-box { position: fixed; top: 40%; left: 50%; transform: translate(-50%, -50%); width: 110px; height: 110px; border: 2px solid var(--gold); display: none; flex-direction: column; align-items: center; justify-content: center; font-weight: bold; z-index: 1500; border-radius: 10px; background: rgba(0,0,0,0.7); color: var(--gold); }
+        .skill-btn { width: 48px; height: 48px; background: rgba(17,17,17,0.9); border: 1px solid var(--neon-blue); border-radius: 8px; color: #fff; font-size: 10px; font-weight: bold; }
+        .attack-btn { width: 85px; height: 85px; background: rgba(255,0,60,0.1); border: 2px solid var(--neon-red); border-radius: 50%; color: var(--neon-red); font-weight: bold; box-shadow: 0 0 15px rgba(255,0,60,0.3); }
         .floating-text { position: absolute; font-weight: bold; pointer-events: none; animation: floatUp 0.8s forwards; z-index: 4000; }
         @keyframes floatUp { from { opacity:1; transform:translateY(0); } to { opacity:0; transform:translateY(-60px); } }
     </style>
 </head>
 <body>
 
-    <div id="hud">
-        <div id="p-info" style="font-size:11px; font-weight:bold; color:var(--neon-blue); margin-bottom:5px;">PILOT: ---</div>
-        <div class="bar-container"><div id="hp-bar" class="bar-fill"></div><div class="bar-text" id="hp-text">100 / 100</div></div>
-        <div class="bar-container"><div id="mp-bar" class="bar-fill"></div><div class="bar-text" id="mp-text">50 / 50</div></div>
-        <div style="font-size:10px; color:var(--neon-green);">LVL: <span id="lvl">1</span> | EXP: <span id="exp">0</span></div>
+    <div id="loading-screen" class="screen">
+        <h2 style="color:var(--neon-blue);">NEXUS.OS_BOOTING...</h2>
+        <div style="color:var(--neon-green); font-size:12px;">Siber-Ağ Kuruluyor...</div>
     </div>
 
-    <div id="menu">
-        <div class="menu-btn" onclick="openModal('char-panel')">STATS</div>
-        <div class="menu-btn" onclick="openModal('inv-panel')">KASA</div>
-        <div class="menu-btn" onclick="town()">TOWN</div>
+    <div id="race-screen" class="screen hidden">
+        <h2>IRKINI SEÇ</h2>
+        <div class="card" onclick="selectRace('Human')">HUMAN RESISTANCE ✊</div>
+        <div class="card" onclick="selectRace('AI')">AI SENTINELS 🤖</div>
+    </div>
+
+    <div id="class-screen" class="screen hidden">
+        <h2>SINIFINI SEÇ</h2>
+        <div class="card" onclick="selectClass('Slayer')">⚔️ SLAYER</div>
+        <div class="card" onclick="selectClass('Phantom')">🔪 PHANTOM</div>
+        <div class="card" onclick="selectClass('Technomancer')">🔮 TECHNOMANCER</div>
+    </div>
+
+    <div id="hud" style="display:none;">
+        <div id="p-info" style="font-size:11px; font-weight:bold; color:var(--neon-blue); margin-bottom:8px;">PILOT: ---</div>
+        <div class="bar-container"><div id="hp-bar" class="bar-fill"></div><div class="bar-text" id="hp-text">--- / ---</div></div>
+        <div class="bar-container"><div id="mp-bar" class="bar-fill"></div><div class="bar-text" id="mp-text">--- / ---</div></div>
+        <div style="font-size:11px; color:var(--neon-green);">LVL: <span id="lvl">1</span> | EXP: <span id="exp">0</span></div>
+    </div>
+
+    <div id="menu" style="display:none;">
+        <button class="menu-btn" onclick="openModal('char-panel')">STATS</button>
+        <button class="menu-btn" onclick="openModal('inv-panel')">KASA</button>
+        <button class="menu-btn" onclick="town()">TOWN</button>
     </div>
 
     <div id="game-container"></div>
@@ -59,51 +88,83 @@
     
     <div id="action-bar">
         <div class="skills-grid">
-            <div class="skill-btn" onclick="useSkill(1)">SKILL 1</div>
-            <div class="skill-btn" onclick="useSkill(2)">SKILL 2</div>
-            <div class="skill-btn" onclick="useSkill(3)">SKILL 3</div>
-            <div class="skill-btn" onclick="usePot('HP')" style="border-color:red; color:red;">HP POT</div>
-            <div class="skill-btn" onclick="usePot('MP')" style="border-color:cyan; color:cyan;">MP POT</div>
+            <button class="skill-btn" onclick="useSkill(1)">S1</button>
+            <button class="skill-btn" onclick="useSkill(2)">S2</button>
+            <button class="skill-btn" onclick="useSkill(3)">S3</button>
+            <button class="skill-btn" onclick="usePot('HP')" style="border-color:red; color:red;">HP</button>
+            <button class="skill-btn" onclick="usePot('MP')" style="border-color:cyan; color:cyan;">MP</button>
         </div>
         <button class="attack-btn" onclick="performAttack()">ATAK</button>
     </div>
 
-    <div id="html-loot-box" onclick="collectLoot()">LOOT BOX<br>🎁</div>
-
     <div id="char-panel" class="modal">
-        <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-            <span style="color:var(--neon-blue); font-weight:bold;">KARAKTER STATS (PUAN: <span id="stat-pts">0</span>)</span>
-            <span onclick="closeModals()" style="color:red; cursor:pointer; font-weight:bold;">[X]</span>
+        <div style="display:flex; justify-content:space-between; margin-bottom:15px; border-bottom:1px solid #333; padding-bottom:10px;">
+            <span style="color:var(--neon-blue); font-weight:bold;">SİSTEM STATLARI (PUAN: <span id="stat-pts">0</span>)</span>
+            <span onclick="closeModals()" style="color:red; cursor:pointer;">[KAPAT]</span>
         </div>
         <div id="stat-list"></div>
     </div>
 
     <div id="inv-panel" class="modal">
         <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-            <span style="color:var(--neon-blue); font-weight:bold;">SİBER-KASA (INV)</span>
-            <span onclick="closeModals()" style="color:red; cursor:pointer; font-weight:bold;">[X]</span>
+            <span style="color:var(--neon-blue); font-weight:bold;">SİBER-KASA</span>
+            <span onclick="closeModals()" style="color:red; cursor:pointer;">[X]</span>
         </div>
-        <div id="inv-content" style="display:grid; grid-template-columns:repeat(4,1fr); gap:5px;"></div>
+        <div class="inv-tabs">
+            <button id="tab-eq" onclick="showTab('eq')" class="active-tab">EKİPMAN (9)</button>
+            <button id="tab-bag" onclick="showTab('bag')">ÇANTA (50)</button>
+        </div>
+        <div id="eq-view" class="equip-grid">
+            <div class="equip-slot">KASK</div><div class="equip-slot">KOLYE</div><div class="equip-slot">SİLAH</div>
+            <div class="equip-slot">GÖĞÜS</div><div class="equip-slot">KEMER</div><div class="equip-slot">KOLLUK</div>
+            <div class="equip-slot">YÜZÜK</div><div class="equip-slot">BOT</div><div class="equip-slot">YÜZÜK</div>
+        </div>
+        <div id="bag-view" class="bag-grid" style="display:none;"></div>
     </div>
 
 <script>
-    // --- VERİ VE SİSTEM ---
     let p = { 
-        id: 1234, username: 'Pilot', level: 1, exp: 0, 
+        id: 1, username: 'Pilot', race: '', class: '', level: 1, exp: 0, 
         str: 10, dex: 10, int_stat: 10, vit: 10, stat_points: 5,
-        currentHP: 300, currentMP: 150, class: 'Data-Sniper'
+        currentHP: 100, currentMP: 50
     };
-    let mobHP = 500, maxMobHP = 500;
-    let gameScene, playerSprite, mobSprite, isMobDead = false;
+    let gameScene, playerSprite, mobSprite, phaserStarted = false;
+
+    // --- SİSTEM BAŞLATMA ---
+    window.onload = () => {
+        setTimeout(() => {
+            document.getElementById('loading-screen').classList.add('hidden');
+            document.getElementById('race-screen').classList.remove('hidden');
+        }, 1500);
+    };
+
+    window.selectRace = (r) => { p.race = r; document.getElementById('race-screen').classList.add('hidden'); document.getElementById('class-screen').classList.remove('hidden'); };
+    window.selectClass = (c) => { p.class = c; startGame(); };
+
+    function startGame() {
+        document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+        document.getElementById('hud').style.display = 'block';
+        document.getElementById('menu').style.display = 'flex';
+        document.getElementById('action-bar').style.display = 'flex';
+        
+        // Çanta slotlarını oluştur (50 Adet)
+        const bag = document.getElementById('bag-view');
+        for(let i=0; i<50; i++) {
+            let s = document.createElement('div'); s.className = 'bag-slot'; s.innerText = "--";
+            bag.appendChild(s);
+        }
+        
+        updateUI();
+        initPhaser();
+    }
 
     function updateUI() {
-        // MANA VE HP HESAPLAMA (Fix)
         const maxHP = 100 + (p.vit * 20);
         const maxMP = 50 + (p.int_stat * 10);
         
-        document.getElementById('p-info').innerText = `${p.username.toUpperCase()} [${p.class}]`;
-        document.getElementById('hp-text').innerText = `${Math.floor(p.currentHP)} / ${maxHP}`;
-        document.getElementById('mp-text').innerText = `${Math.floor(p.currentMP)} / ${maxMP}`;
+        document.getElementById('p-info').innerText = `${p.username.toUpperCase()} [${p.race}-${p.class}]`;
+        document.getElementById('hp-text').innerText = `${p.currentHP} / ${maxHP}`;
+        document.getElementById('mp-text').innerText = `${p.currentMP} / ${maxMP}`;
         document.getElementById('hp-bar').style.width = (p.currentHP / maxHP * 100) + "%";
         document.getElementById('mp-bar').style.width = (p.currentMP / maxMP * 100) + "%";
         
@@ -111,7 +172,6 @@
         document.getElementById('exp').innerText = p.exp;
         document.getElementById('stat-pts').innerText = p.stat_points;
 
-        // Stat Listesini Render Et
         const list = document.getElementById('stat-list');
         list.innerHTML = ['str','dex','int_stat','vit'].map(s => `
             <div class="stat-row">
@@ -121,32 +181,29 @@
         `).join('');
     }
 
-    // --- BUTON FONKSİYONLARI (Fix) ---
-    window.openModal = (id) => { document.getElementById(id).style.display = 'flex'; };
-    window.closeModals = () => { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); };
-    window.town = () => { 
-        if(playerSprite) { playerSprite.setPosition(window.innerWidth/2, window.innerHeight/2); showFT("TOWN!", "cyan", playerSprite.x, playerSprite.y); }
+    // --- MODAL & TABS ---
+    window.openModal = (id) => document.getElementById(id).style.display = 'flex';
+    window.closeModals = () => document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
+    window.showTab = (t) => {
+        document.getElementById('eq-view').style.display = t === 'eq' ? 'grid' : 'none';
+        document.getElementById('bag-view').style.display = t === 'bag' ? 'grid' : 'none';
+        document.getElementById('tab-eq').className = t === 'eq' ? 'active-tab' : '';
+        document.getElementById('tab-bag').className = t === 'bag' ? 'active-tab' : '';
     };
 
-    window.upStat = (s) => { 
-        if(p.stat_points > 0) { p[s]++; p.stat_points--; updateUI(); } 
-    };
+    window.upStat = (s) => { if(p.stat_points > 0) { p[s]++; p.stat_points--; updateUI(); } };
+    window.town = () => { if(playerSprite) playerSprite.setPosition(window.innerWidth/2, window.innerHeight/2); };
 
-    window.usePot = (type) => {
-        const maxHP = 100 + (p.vit * 20);
-        const maxMP = 50 + (p.int_stat * 10);
-        if(type === 'HP') { p.currentHP = Math.min(maxHP, p.currentHP + 50); showFT("+50 HP", "red", playerSprite.x, playerSprite.y-40); }
-        else { p.currentMP = Math.min(maxMP, p.currentMP + 30); showFT("+30 MP", "cyan", playerSprite.x, playerSprite.y-40); }
-        updateUI();
-    };
-
-    // --- PHASER (COMBAT FIX) ---
-    const config = {
-        type: Phaser.AUTO, parent: 'game-container', width: window.innerWidth, height: window.innerHeight, transparent: true,
-        physics: { default: 'arcade' },
-        scene: { preload: preload, create: create, update: () => {} }
-    };
-    const game = new Phaser.Game(config);
+    // --- PHASER (KARAKTER & SAVAŞ) ---
+    function initPhaser() {
+        if(phaserStarted) return; phaserStarted = true;
+        const config = {
+            type: Phaser.AUTO, parent: 'game-container', width: window.innerWidth, height: window.innerHeight, transparent: true,
+            physics: { default: 'arcade' },
+            scene: { preload: preload, create: create }
+        };
+        new Phaser.Game(config);
+    }
 
     function preload() {
         this.load.spritesheet('hero', 'https://labs.phaser.io/assets/sprites/dude.png', { frameWidth: 32, frameHeight: 48 });
@@ -154,54 +211,35 @@
 
     function create() {
         gameScene = this;
-        playerSprite = this.physics.add.sprite(window.innerWidth/2, window.innerHeight/2 + 100, 'hero').setScale(2);
+        // Frame 4: Karakterin düz duruşu (Sideways hatasını önler)
+        playerSprite = this.physics.add.sprite(window.innerWidth/2, window.innerHeight/2, 'hero', 4).setScale(2);
         
-        // BOSS (Sektör-7)
         let g = this.make.graphics({x:0, y:0, add:false});
-        g.fillStyle(0xffaa00, 1); g.fillRect(0,0,60,60);
-        g.generateTexture('mob', 60,60);
-        mobSprite = this.physics.add.sprite(window.innerWidth/2, window.innerHeight/2 - 100, 'mob');
-        
-        // Joystick
+        g.fillStyle(0xff003c, 1); g.fillRect(0,0,50,50);
+        g.generateTexture('mob', 50,50);
+        mobSprite = this.physics.add.sprite(window.innerWidth/2, window.innerHeight/2 - 120, 'mob');
+
         const j = nipplejs.create({ zone: document.getElementById('joystick-zone'), mode: 'static', position: {left:'60px', bottom:'60px'}, color: '#00f0ff' });
         j.on('move', (e, d) => {
-            playerSprite.setVelocity(d.vector.x * 200, -d.vector.y * 200);
-            if(d.vector.x != 0) playerSprite.setFlipX(d.vector.x < 0);
+            playerSprite.setVelocity(d.vector.x * 180, -d.vector.y * 180);
+            if(d.vector.x !== 0) playerSprite.setFlipX(d.vector.x < 0);
         });
         j.on('end', () => playerSprite.setVelocity(0));
-
-        updateUI();
     }
 
     window.performAttack = () => {
-        if(isMobDead || !mobSprite) return;
+        if(!mobSprite.visible) return;
         const dist = Phaser.Math.Distance.Between(playerSprite.x, playerSprite.y, mobSprite.x, mobSprite.y);
-        
-        // Menzili Genişlettik (Fix)
-        if(dist < 200) {
-            let dmg = 15 + (p.str * 2);
-            mobHP -= dmg;
-            showFT(`-${dmg}`, "red", mobSprite.x, mobSprite.y);
-            
-            // Boss Titreme Efekti
-            gameScene.tweens.add({ targets: mobSprite, x: mobSprite.x + 5, yoyo: true, duration: 50 });
-
-            if(mobHP <= 0) {
-                isMobDead = true;
-                mobSprite.setVisible(false);
-                document.getElementById('html-loot-box').style.display = 'flex';
-                showFT("ELIMINATED!", "gold", mobSprite.x, mobSprite.y);
-            }
-        } else {
-            showFT("TOO FAR!", "gray", playerSprite.x, playerSprite.y - 50);
+        if(dist < 180) {
+            showFT(`-${10 + p.str}`, "red", mobSprite.x, mobSprite.y);
+            gameScene.tweens.add({ targets: mobSprite, alpha: 0.5, yoyo: true, duration: 100 });
+            if(Math.random() > 0.8) { mobSprite.setVisible(false); showFT("BOSS DEFEATED!", "gold", mobSprite.x, mobSprite.y); }
         }
     };
 
-    window.collectLoot = () => {
-        p.exp += 100;
-        document.getElementById('html-loot-box').style.display = 'none';
-        isMobDead = false; mobHP = maxMobHP; mobSprite.setVisible(true);
-        showFT("+100 EXP", "lime", playerSprite.x, playerSprite.y);
+    window.usePot = (t) => {
+        showFT(`+30 ${t}`, t === 'HP' ? 'red' : 'cyan', playerSprite.x, playerSprite.y-50);
+        p[t === 'HP' ? 'currentHP' : 'currentMP'] += 30;
         updateUI();
     };
 
@@ -209,9 +247,6 @@
         const el = document.createElement('div'); el.className = 'floating-text'; el.innerText = t; el.style.color = c;
         el.style.left = x+'px'; el.style.top = y+'px'; document.body.appendChild(el); setTimeout(() => el.remove(), 800);
     }
-
-    // Başlat
-    updateUI();
 </script>
 </body>
 </html>
