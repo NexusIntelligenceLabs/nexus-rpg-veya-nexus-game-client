@@ -3,9 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nexus Intelligence - Full Alpha v2.2</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <title>Nexus Intelligence - Absolute Alpha v2.3</title>
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.9.0/nipplejs.min.js"></script>
     <style>
@@ -15,37 +13,32 @@
         
         /* SEÇİM EKRANLARI */
         .screen { position: fixed; inset: 0; background: #000; z-index: 9000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; }
-        .card { background: #111; border: 1px solid var(--neon-blue); padding: 20px; margin: 10px; width: 80%; border-radius: 12px; cursor: pointer; color: var(--neon-blue); font-weight: bold; box-shadow: 0 0 10px rgba(0,240,255,0.2); }
-        .card:active { transform: scale(0.95); background: var(--neon-blue); color: #000; }
+        .card { background: #111; border: 1px solid var(--neon-blue); padding: 15px; margin: 5px; width: 85%; border-radius: 10px; cursor: pointer; color: var(--neon-blue); font-weight: bold; font-size: 14px; }
         .hidden { display: none !important; }
 
-        /* HUD & BARS (YAZILAR ÜSTTE) */
-        #hud { position: fixed; top: 10px; left: 10px; z-index: 2000; background: rgba(0,0,0,0.85); padding: 12px; border-radius: 10px; border: 1px solid var(--neon-blue); min-width: 180px; }
+        /* HUD & BARS */
+        #hud { position: fixed; top: 10px; left: 10px; z-index: 2000; background: rgba(0,0,0,0.85); padding: 10px; border-radius: 10px; border: 1px solid var(--neon-blue); min-width: 180px; }
         .bar-container { width: 100%; height: 20px; background: #222; margin-bottom: 8px; border-radius: 5px; position: relative; border: 1px solid #444; overflow: hidden; }
         .bar-fill { height: 100%; transition: width 0.3s; width: 100%; }
         #hp-bar { background: linear-gradient(90deg, #ff003c, #80001e); } 
         #mp-bar { background: linear-gradient(90deg, #00f0ff, #005f73); }
-        .bar-text { position: absolute; width: 100%; text-align: center; font-size: 11px; font-weight: bold; line-height: 20px; color: #fff; text-shadow: 1px 1px 2px #000; z-index: 10; top: 0; left: 0; }
+        .bar-text { position: absolute; width: 100%; text-align: center; font-size: 11px; font-weight: bold; line-height: 20px; color: #fff; z-index: 10; top: 0; left: 0; text-shadow: 1px 1px #000; }
 
-        /* KASA (INV) MODAL */
-        .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; background: #0a0a0a; border: 2px solid var(--neon-blue); z-index: 5000; display: none; flex-direction: column; padding: 15px; border-radius: 12px; box-shadow: 0 0 30px #000; }
-        .inv-tabs { display: flex; gap: 5px; margin-bottom: 10px; }
-        .inv-tabs button { flex: 1; padding: 10px; background: #222; color: #fff; border: 1px solid #444; cursor: pointer; font-weight: bold; }
-        .active-tab { background: var(--neon-blue) !important; color: #000 !important; }
-        
+        /* MODALS */
+        .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; background: #0a0a0a; border: 2px solid var(--neon-blue); z-index: 5000; display: none; flex-direction: column; padding: 15px; border-radius: 12px; }
         .equip-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 10px; }
         .equip-slot { height: 60px; background: #151515; border: 1px solid #333; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 9px; color: #666; }
-        .bag-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; max-height: 200px; overflow-y: auto; padding: 5px; }
-        .bag-slot { height: 45px; background: #151515; border: 1px solid #222; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 8px; color: #444; }
+        .bag-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; max-height: 200px; overflow-y: auto; }
+        .bag-slot { height: 45px; background: #151515; border: 1px solid #222; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 8px; }
 
-        /* DİĞERLERİ */
         #menu { position: fixed; top: 10px; right: 10px; z-index: 2000; display: flex; gap: 5px; }
         .menu-btn { background: rgba(20,20,20,0.9); border: 1px solid var(--neon-blue); padding: 8px 12px; border-radius: 6px; color: #fff; font-size: 11px; font-weight: bold; }
         #joystick-zone { position: fixed; bottom: 40px; left: 30px; width: 120px; height: 120px; z-index: 1000; }
         #action-bar { position: fixed; bottom: 20px; right: 20px; z-index: 1000; display: none; flex-direction: column; align-items: flex-end; gap: 10px; }
         .skills-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
         .skill-btn { width: 48px; height: 48px; background: rgba(17,17,17,0.9); border: 1px solid var(--neon-blue); border-radius: 8px; color: #fff; font-size: 10px; font-weight: bold; }
-        .attack-btn { width: 85px; height: 85px; background: rgba(255,0,60,0.1); border: 2px solid var(--neon-red); border-radius: 50%; color: var(--neon-red); font-weight: bold; box-shadow: 0 0 15px rgba(255,0,60,0.3); }
+        .attack-btn { width: 85px; height: 85px; background: rgba(255,0,60,0.1); border: 2px solid var(--neon-red); border-radius: 50%; color: var(--neon-red); font-weight: bold; }
+        #html-loot-box { position: fixed; top: 40%; left: 50%; transform: translate(-50%, -50%); width: 110px; height: 110px; border: 2px solid var(--gold); display: none; flex-direction: column; align-items: center; justify-content: center; font-weight: bold; z-index: 1500; border-radius: 10px; background: rgba(0,0,0,0.8); color: var(--gold); }
         .floating-text { position: absolute; font-weight: bold; pointer-events: none; animation: floatUp 0.8s forwards; z-index: 4000; }
         @keyframes floatUp { from { opacity:1; transform:translateY(0); } to { opacity:0; transform:translateY(-60px); } }
     </style>
@@ -54,7 +47,6 @@
 
     <div id="loading-screen" class="screen">
         <h2 style="color:var(--neon-blue);">NEXUS.OS_BOOTING...</h2>
-        <div style="color:var(--neon-green); font-size:12px;">Siber-Ağ Kuruluyor...</div>
     </div>
 
     <div id="race-screen" class="screen hidden">
@@ -65,9 +57,11 @@
 
     <div id="class-screen" class="screen hidden">
         <h2>SINIFINI SEÇ</h2>
-        <div class="card" onclick="selectClass('Slayer')">⚔️ SLAYER</div>
-        <div class="card" onclick="selectClass('Phantom')">🔪 PHANTOM</div>
-        <div class="card" onclick="selectClass('Technomancer')">🔮 TECHNOMANCER</div>
+        <div class="card" onclick="selectClass('Warrior')">⚔️ WARRIOR</div>
+        <div class="card" onclick="selectClass('Assassin')">🔪 ASSASSIN</div>
+        <div class="card" onclick="selectClass('Archer')">🏹 ARCHER</div>
+        <div class="card" onclick="selectClass('Mage')">🔮 MAGE</div>
+        <div class="card" onclick="selectClass('Priest')">🛡️ PRIEST</div>
     </div>
 
     <div id="hud" style="display:none;">
@@ -97,10 +91,12 @@
         <button class="attack-btn" onclick="performAttack()">ATAK</button>
     </div>
 
+    <div id="html-loot-box" onclick="collectLoot()">DATA-BOX<br>🎁<br>CLICK!</div>
+
     <div id="char-panel" class="modal">
         <div style="display:flex; justify-content:space-between; margin-bottom:15px; border-bottom:1px solid #333; padding-bottom:10px;">
-            <span style="color:var(--neon-blue); font-weight:bold;">SİSTEM STATLARI (PUAN: <span id="stat-pts">0</span>)</span>
-            <span onclick="closeModals()" style="color:red; cursor:pointer;">[KAPAT]</span>
+            <span style="color:var(--neon-blue); font-weight:bold;">STATS (PUAN: <span id="stat-pts">0</span>)</span>
+            <span onclick="closeModals()" style="color:red; cursor:pointer;">[X]</span>
         </div>
         <div id="stat-list"></div>
     </div>
@@ -110,136 +106,109 @@
             <span style="color:var(--neon-blue); font-weight:bold;">SİBER-KASA</span>
             <span onclick="closeModals()" style="color:red; cursor:pointer;">[X]</span>
         </div>
-        <div class="inv-tabs">
-            <button id="tab-eq" onclick="showTab('eq')" class="active-tab">EKİPMAN (9)</button>
-            <button id="tab-bag" onclick="showTab('bag')">ÇANTA (50)</button>
-        </div>
         <div id="eq-view" class="equip-grid">
             <div class="equip-slot">KASK</div><div class="equip-slot">KOLYE</div><div class="equip-slot">SİLAH</div>
             <div class="equip-slot">GÖĞÜS</div><div class="equip-slot">KEMER</div><div class="equip-slot">KOLLUK</div>
             <div class="equip-slot">YÜZÜK</div><div class="equip-slot">BOT</div><div class="equip-slot">YÜZÜK</div>
         </div>
-        <div id="bag-view" class="bag-grid" style="display:none;"></div>
+        <div id="bag-view" class="bag-grid"></div>
     </div>
 
 <script>
     let p = { 
         id: 1, username: 'Pilot', race: '', class: '', level: 1, exp: 0, 
         str: 10, dex: 10, int_stat: 10, vit: 10, stat_points: 5,
-        currentHP: 100, currentMP: 50
+        currentHP: 300, currentMP: 150 
     };
+    let mobData = { hp: 200, maxHP: 200, visible: true };
     let gameScene, playerSprite, mobSprite, phaserStarted = false;
 
-    // --- SİSTEM BAŞLATMA ---
-    window.onload = () => {
-        setTimeout(() => {
-            document.getElementById('loading-screen').classList.add('hidden');
-            document.getElementById('race-screen').classList.remove('hidden');
-        }, 1500);
-    };
-
+    window.onload = () => setTimeout(() => { document.getElementById('loading-screen').classList.add('hidden'); document.getElementById('race-screen').classList.remove('hidden'); }, 1000);
     window.selectRace = (r) => { p.race = r; document.getElementById('race-screen').classList.add('hidden'); document.getElementById('class-screen').classList.remove('hidden'); };
     window.selectClass = (c) => { p.class = c; startGame(); };
 
     function startGame() {
         document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
-        document.getElementById('hud').style.display = 'block';
-        document.getElementById('menu').style.display = 'flex';
-        document.getElementById('action-bar').style.display = 'flex';
-        
-        // Çanta slotlarını oluştur (50 Adet)
-        const bag = document.getElementById('bag-view');
-        for(let i=0; i<50; i++) {
-            let s = document.createElement('div'); s.className = 'bag-slot'; s.innerText = "--";
-            bag.appendChild(s);
-        }
-        
-        updateUI();
-        initPhaser();
+        document.getElementById('hud').style.display = 'block'; document.getElementById('menu').style.display = 'flex'; document.getElementById('action-bar').style.display = 'flex';
+        const bag = document.getElementById('bag-view'); bag.innerHTML = "";
+        for(let i=0; i<50; i++) { let s = document.createElement('div'); s.className = 'bag-slot'; s.innerText = "--"; bag.appendChild(s); }
+        updateUI(); initPhaser();
     }
 
     function updateUI() {
-        const maxHP = 100 + (p.vit * 20);
-        const maxMP = 50 + (p.int_stat * 10);
+        const maxHP = 100 + (p.vit * 20); const maxMP = 50 + (p.int_stat * 10);
+        // LIMIT KONTROLÜ (Fix)
+        p.currentHP = Math.min(p.currentHP, maxHP); p.currentMP = Math.min(p.currentMP, maxMP);
         
         document.getElementById('p-info').innerText = `${p.username.toUpperCase()} [${p.race}-${p.class}]`;
-        document.getElementById('hp-text').innerText = `${p.currentHP} / ${maxHP}`;
-        document.getElementById('mp-text').innerText = `${p.currentMP} / ${maxMP}`;
+        document.getElementById('hp-text').innerText = `${Math.floor(p.currentHP)} / ${maxHP}`;
+        document.getElementById('mp-text').innerText = `${Math.floor(p.currentMP)} / ${maxMP}`;
         document.getElementById('hp-bar').style.width = (p.currentHP / maxHP * 100) + "%";
         document.getElementById('mp-bar').style.width = (p.currentMP / maxMP * 100) + "%";
-        
-        document.getElementById('lvl').innerText = p.level;
-        document.getElementById('exp').innerText = p.exp;
-        document.getElementById('stat-pts').innerText = p.stat_points;
+        document.getElementById('lvl').innerText = p.level; document.getElementById('exp').innerText = p.exp; document.getElementById('stat-pts').innerText = p.stat_points;
 
         const list = document.getElementById('stat-list');
         list.innerHTML = ['str','dex','int_stat','vit'].map(s => `
-            <div class="stat-row">
-                <span>${s.toUpperCase()}: <b>${p[s]}</b></span>
-                ${p.stat_points > 0 ? `<button class="plus-btn" onclick="upStat('${s}')">+</button>` : ''}
-            </div>
+            <div class="stat-row"><span>${s.toUpperCase()}: <b>${p[s]}</b></span>
+            ${p.stat_points > 0 ? `<button onclick="upStat('${s}')" style="background:#0f0; border:none; padding:5px 10px; border-radius:4px;">+</button>` : ''}</div>
         `).join('');
     }
 
-    // --- MODAL & TABS ---
     window.openModal = (id) => document.getElementById(id).style.display = 'flex';
     window.closeModals = () => document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
-    window.showTab = (t) => {
-        document.getElementById('eq-view').style.display = t === 'eq' ? 'grid' : 'none';
-        document.getElementById('bag-view').style.display = t === 'bag' ? 'grid' : 'none';
-        document.getElementById('tab-eq').className = t === 'eq' ? 'active-tab' : '';
-        document.getElementById('tab-bag').className = t === 'bag' ? 'active-tab' : '';
-    };
-
     window.upStat = (s) => { if(p.stat_points > 0) { p[s]++; p.stat_points--; updateUI(); } };
     window.town = () => { if(playerSprite) playerSprite.setPosition(window.innerWidth/2, window.innerHeight/2); };
 
-    // --- PHASER (KARAKTER & SAVAŞ) ---
     function initPhaser() {
         if(phaserStarted) return; phaserStarted = true;
-        const config = {
-            type: Phaser.AUTO, parent: 'game-container', width: window.innerWidth, height: window.innerHeight, transparent: true,
-            physics: { default: 'arcade' },
-            scene: { preload: preload, create: create }
-        };
+        const config = { type: Phaser.AUTO, parent: 'game-container', width: window.innerWidth, height: window.innerHeight, transparent: true, physics: { default: 'arcade' }, scene: { preload: preload, create: create } };
         new Phaser.Game(config);
     }
 
-    function preload() {
-        this.load.spritesheet('hero', 'https://labs.phaser.io/assets/sprites/dude.png', { frameWidth: 32, frameHeight: 48 });
-    }
+    function preload() { this.load.spritesheet('hero', 'https://labs.phaser.io/assets/sprites/dude.png', { frameWidth: 32, frameHeight: 48 }); }
 
     function create() {
         gameScene = this;
-        // Frame 4: Karakterin düz duruşu (Sideways hatasını önler)
         playerSprite = this.physics.add.sprite(window.innerWidth/2, window.innerHeight/2, 'hero', 4).setScale(2);
         
+        // CANAVAR OLUŞTURMA (Görünürlük Fix)
         let g = this.make.graphics({x:0, y:0, add:false});
         g.fillStyle(0xff003c, 1); g.fillRect(0,0,50,50);
-        g.generateTexture('mob', 50,50);
-        mobSprite = this.physics.add.sprite(window.innerWidth/2, window.innerHeight/2 - 120, 'mob');
-
+        g.generateTexture('mob_tex', 50,50);
+        mobSprite = this.physics.add.sprite(window.innerWidth/2, window.innerHeight/2 - 150, 'mob_tex');
+        
         const j = nipplejs.create({ zone: document.getElementById('joystick-zone'), mode: 'static', position: {left:'60px', bottom:'60px'}, color: '#00f0ff' });
-        j.on('move', (e, d) => {
-            playerSprite.setVelocity(d.vector.x * 180, -d.vector.y * 180);
-            if(d.vector.x !== 0) playerSprite.setFlipX(d.vector.x < 0);
-        });
+        j.on('move', (e, d) => { playerSprite.setVelocity(d.vector.x * 200, -d.vector.y * 200); if(d.vector.x !== 0) playerSprite.setFlipX(d.vector.x < 0); });
         j.on('end', () => playerSprite.setVelocity(0));
     }
 
     window.performAttack = () => {
-        if(!mobSprite.visible) return;
+        if(!mobData.visible) return;
         const dist = Phaser.Math.Distance.Between(playerSprite.x, playerSprite.y, mobSprite.x, mobSprite.y);
         if(dist < 180) {
-            showFT(`-${10 + p.str}`, "red", mobSprite.x, mobSprite.y);
+            let dmg = 15 + (p.str * 2); mobData.hp -= dmg;
+            showFT(`-${dmg}`, "red", mobSprite.x, mobSprite.y);
             gameScene.tweens.add({ targets: mobSprite, alpha: 0.5, yoyo: true, duration: 100 });
-            if(Math.random() > 0.8) { mobSprite.setVisible(false); showFT("BOSS DEFEATED!", "gold", mobSprite.x, mobSprite.y); }
-        }
+            if(mobData.hp <= 0) { 
+                mobData.visible = false; mobSprite.setVisible(false); 
+                document.getElementById('html-loot-box').style.display = 'flex'; 
+            }
+        } else { showFT("MENZİL DIŞI!", "gray", playerSprite.x, playerSprite.y-50); }
+    };
+
+    window.collectLoot = () => {
+        p.exp += 150; document.getElementById('html-loot-box').style.display = 'none';
+        showFT("+150 EXP", "gold", playerSprite.x, playerSprite.y);
+        // RESPAWN (Yeniden Doğma)
+        setTimeout(() => { mobData.hp = mobData.maxHP; mobData.visible = true; mobSprite.setVisible(true); showFT("BOSS RESPAWNED!", "red", mobSprite.x, mobSprite.y); }, 3000);
+        updateUI();
     };
 
     window.usePot = (t) => {
-        showFT(`+30 ${t}`, t === 'HP' ? 'red' : 'cyan', playerSprite.x, playerSprite.y-50);
-        p[t === 'HP' ? 'currentHP' : 'currentMP'] += 30;
+        const maxHP = 100 + (p.vit * 20); const maxMP = 50 + (p.int_stat * 10);
+        if(t === 'HP') p.currentHP = Math.min(maxHP, p.currentHP + 50);
+        else p.currentMP = Math.min(maxMP, p.currentMP + 30);
+        showFT(`+${t}`, t === 'HP' ? 'red' : 'cyan', playerSprite.x, playerSprite.y-60);
         updateUI();
     };
 
