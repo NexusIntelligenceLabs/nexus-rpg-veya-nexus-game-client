@@ -3,56 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nexus RPG - World Expansion v2.4</title>
+    <title>Nexus RPG - Legacy Edition v2.5</title>
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.9.0/nipplejs.min.js"></script>
     <style>
-        :root { --neon-blue: #00f0ff; --neon-red: #ff003c; --gold: #ffd700; }
-        body { background: #000; color: #fff; font-family: sans-serif; margin: 0; overflow: hidden; touch-action: none; }
+        :root { --neon-blue: #00f0ff; --neon-red: #ff003c; --gold: #ffd700; --bg: #050505; }
+        body { background: var(--bg); color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; overflow: hidden; touch-action: none; }
         #game-container { position: fixed; inset: 0; z-index: 1; }
         
-        /* SEÇİM EKRANLARI */
-        .screen { position: fixed; inset: 0; background: #000; z-index: 9000; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-        .card { background: #111; border: 1px solid var(--neon-blue); padding: 15px; margin: 5px; width: 80%; border-radius: 10px; cursor: pointer; color: var(--neon-blue); font-weight: bold; }
+        /* SEÇİM EKRANI */
+        .screen { position: fixed; inset: 0; background: #000; z-index: 9000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .card { background: #111; border: 1px solid var(--neon-blue); padding: 15px; margin: 5px; width: 85%; border-radius: 10px; cursor: pointer; color: var(--neon-blue); font-weight: bold; text-align: center; }
         .hidden { display: none !important; }
 
         /* HUD & UI */
-        #hud { position: fixed; top: 10px; left: 10px; z-index: 2000; background: rgba(0,0,0,0.7); padding: 10px; border-radius: 10px; border: 1px solid var(--neon-blue); min-width: 170px; }
-        .bar-container { width: 100%; height: 18px; background: #222; margin-bottom: 5px; border-radius: 4px; position: relative; overflow: hidden; }
-        .bar-fill { height: 100%; transition: width 0.3s; }
+        #hud { position: fixed; top: 10px; left: 10px; z-index: 2000; background: rgba(0,0,0,0.8); padding: 12px; border-radius: 10px; border: 1px solid var(--neon-blue); min-width: 180px; }
+        .bar-container { width: 100%; height: 20px; background: #222; margin-bottom: 8px; border-radius: 5px; position: relative; overflow: hidden; border: 1px solid #444; }
+        .bar-fill { height: 100%; transition: width 0.3s; width: 100%; }
         #hp-bar { background: linear-gradient(90deg, #ff003c, #80001e); } 
         #mp-bar { background: linear-gradient(90deg, #00f0ff, #005f73); }
-        .bar-text { position: absolute; width: 100%; text-align: center; font-size: 10px; font-weight: bold; line-height: 18px; z-index: 10; top: 0; text-shadow: 1px 1px #000; }
+        .bar-text { position: absolute; width: 100%; text-align: center; font-size: 11px; font-weight: bold; line-height: 20px; z-index: 10; top: 0; text-shadow: 1px 1px #000; color: #fff; }
 
+        /* KASA (INV) & STATS */
+        .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; background: #0a0a0a; border: 2px solid var(--neon-blue); z-index: 5000; display: none; flex-direction: column; padding: 15px; border-radius: 12px; }
+        .equip-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px; }
+        .eq-slot { height: 55px; background: #151515; border: 1px solid #333; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 8px; color: #555; }
+        .bag-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; max-height: 180px; overflow-y: auto; }
+        .bag-slot { height: 40px; background: #151515; border: 1px solid #222; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 7px; color: #444; }
+        .stat-row { display: flex; justify-content: space-between; padding: 10px; background: rgba(255,255,255,0.05); margin-bottom: 5px; border-radius: 6px; align-items: center; }
+        .plus-btn { background: #0f0; border: none; padding: 5px 12px; border-radius: 4px; font-weight: bold; color: #000; cursor: pointer; }
+
+        /* BUTONLAR */
+        #menu { position: fixed; top: 10px; right: 10px; z-index: 2000; display: flex; gap: 6px; }
+        .menu-btn { background: rgba(0,0,0,0.8); border: 1px solid var(--neon-blue); padding: 8px 12px; border-radius: 6px; color: #fff; font-size: 11px; font-weight: bold; }
         #action-bar { position: fixed; bottom: 20px; right: 20px; z-index: 1000; display: none; flex-direction: column; align-items: flex-end; gap: 10px; }
         .skills-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
-        .skill-btn { width: 45px; height: 45px; background: rgba(0,0,0,0.8); border: 1px solid var(--neon-blue); border-radius: 8px; color: #fff; font-size: 10px; font-weight: bold; }
-        .attack-btn { width: 80px; height: 80px; background: rgba(255,0,60,0.1); border: 2px solid var(--neon-red); border-radius: 50%; color: var(--neon-red); font-weight: bold; }
+        .skill-btn { width: 45px; height: 45px; background: rgba(0,0,0,0.8); border: 1px solid var(--neon-blue); border-radius: 8px; color: #fff; font-size: 10px; }
+        .attack-btn { width: 85px; height: 85px; background: rgba(255,0,60,0.1); border: 2px solid var(--neon-red); border-radius: 50%; color: var(--neon-red); font-weight: bold; }
         #joystick-zone { position: fixed; bottom: 40px; left: 30px; width: 120px; height: 120px; z-index: 1000; }
-        
-        #loot-box { position: fixed; top: 40%; left: 50%; transform: translate(-50%, -50%); width: 100px; height: 100px; border: 2px solid var(--gold); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 1500; background: rgba(0,0,0,0.8); color: var(--gold); border-radius: 10px; }
         .floating-text { position: absolute; font-weight: bold; pointer-events: none; animation: floatUp 0.8s forwards; z-index: 4000; }
         @keyframes floatUp { from { opacity:1; transform:translateY(0); } to { opacity:0; transform:translateY(-60px); } }
     </style>
 </head>
 <body>
 
-    <div id="loading-screen" class="screen"><h2>NEXUS.OS_BAĞLANIYOR...</h2></div>
+    <div id="loading-screen" class="screen"><h2>NEXUS CORE_YÜKLENİYOR...</h2></div>
 
     <div id="class-screen" class="screen hidden">
         <h2>SINIFINI SEÇ</h2>
-        <div class="card" onclick="selectClass('Warrior')">⚔️ WARRIOR (Tank)</div>
-        <div class="card" onclick="selectClass('Assassin')">🔪 ASSASSIN (Burst)</div>
-        <div class="card" onclick="selectClass('Archer')">🏹 ARCHER (Menzil)</div>
-        <div class="card" onclick="selectClass('Mage')">🔮 MAGE (Alan Hasarı)</div>
-        <div class="card" onclick="selectClass('Priest')">🛡️ PRIEST (Heal)</div>
+        <div class="card" onclick="selectClass('Warrior', 0xFF0000)">⚔️ WARRIOR</div>
+        <div class="card" onclick="selectClass('Assassin', 0x555555)">🔪 ASSASSIN</div>
+        <div class="card" onclick="selectClass('Archer', 0x00FF00)">🏹 ARCHER</div>
+        <div class="card" onclick="selectClass('Mage', 0x00A2FF)">🔮 MAGE</div>
+        <div class="card" onclick="selectClass('Priest', 0xFFD700)">🛡️ PRIEST</div>
     </div>
 
     <div id="hud" style="display:none;">
-        <div id="p-info" style="font-size:11px; color:var(--neon-blue); margin-bottom:5px;">PILOT: ---</div>
+        <div id="p-info" style="font-size:11px; color:var(--neon-blue); margin-bottom:5px;">---</div>
         <div class="bar-container"><div id="hp-bar" class="bar-fill"></div><div class="bar-text" id="hp-text">--- / ---</div></div>
         <div class="bar-container"><div id="mp-bar" class="bar-fill"></div><div class="bar-text" id="mp-text">--- / ---</div></div>
-        <div style="font-size:10px; color:#0f0;">LVL: <span id="lvl">1</span> | EXP: <span id="exp">0</span></div>
+        <div style="font-size:10px; color:#0f0;">LVL: <span id="lvl">1</span> | STAT: <span id="stat-pts">0</span></div>
+    </div>
+
+    <div id="menu" style="display:none;">
+        <button class="menu-btn" onclick="openModal('char-panel')">STATS</button>
+        <button class="menu-btn" onclick="openModal('inv-panel')">KASA</button>
+        <button class="menu-btn" onclick="town()">TOWN</button>
     </div>
 
     <div id="game-container"></div>
@@ -69,32 +85,56 @@
         <button class="attack-btn" onclick="performAttack()">ATAK</button>
     </div>
 
-    <div id="loot-box" onclick="collectLoot()">DATA-BOX<br>🎁</div>
+    <div id="char-panel" class="modal">
+        <div style="display:flex; justify-content:space-between; margin-bottom:10px; border-bottom:1px solid #333; padding-bottom:5px;">
+            <span style="color:var(--neon-blue); font-weight:bold;">KARAKTER STATLARI</span>
+            <span onclick="closeModals()" style="color:red; cursor:pointer;">[X]</span>
+        </div>
+        <div id="stat-list"></div>
+    </div>
+
+    <div id="inv-panel" class="modal">
+        <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+            <span style="color:var(--neon-blue); font-weight:bold;">SİBER-KASA</span>
+            <span onclick="closeModals()" style="color:red; cursor:pointer;">[X]</span>
+        </div>
+        <div class="equip-grid">
+            <div class="eq-slot">KASK</div><div class="eq-slot">KOLYE</div><div class="eq-slot">SİLAH</div>
+            <div class="eq-slot">ZIRH</div><div class="eq-slot">KEMER</div><div class="eq-slot">KOLLUK</div>
+            <div class="eq-slot">YÜZÜK</div><div class="eq-slot">BOT</div><div class="eq-slot">YÜZÜK</div>
+        </div>
+        <div id="bag-list" class="bag-grid"></div>
+    </div>
 
 <script>
     let p = { 
-        username: 'Pilot', class: '', level: 1, exp: 0, 
-        str: 10, vit: 10, int: 10, dex: 10,
+        username: 'Pilot', class: '', color: 0xFFFFFF, level: 1, exp: 0, 
+        str: 10, vit: 10, int: 10, dex: 10, stat_points: 5,
         currentHP: 300, currentMP: 150
     };
-    let mobData = { hp: 200, maxHP: 200, isDead: false };
-    let gameScene, player, mob, phaserStarted = false;
+    let monsters = []; // Canavar listesi
+    let gameScene, player, phaserStarted = false;
 
     window.onload = () => setTimeout(() => { document.getElementById('loading-screen').classList.add('hidden'); document.getElementById('class-screen').classList.remove('hidden'); }, 1000);
 
-    window.selectClass = (c) => { p.class = c; startGame(); };
+    window.selectClass = (c, color) => { p.class = c; p.color = color; startGame(); };
 
     function startGame() {
         document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
         document.getElementById('hud').style.display = 'block';
+        document.getElementById('menu').style.display = 'flex';
         document.getElementById('action-bar').style.display = 'flex';
+        
+        // 50 Slotluk Çantayı Oluştur
+        const bag = document.getElementById('bag-list');
+        for(let i=0; i<50; i++) { let s = document.createElement('div'); s.className = 'bag-slot'; s.innerText = "--"; bag.appendChild(s); }
+        
         updateUI();
         initPhaser();
     }
 
     function updateUI() {
         const maxHP = 100 + (p.vit * 20); const maxMP = 50 + (p.int * 10);
-        // Limit Kontrolü (Fix)
         p.currentHP = Math.min(p.currentHP, maxHP); p.currentMP = Math.min(p.currentMP, maxMP);
         
         document.getElementById('p-info').innerText = `${p.username.toUpperCase()} [${p.class}]`;
@@ -102,8 +142,21 @@
         document.getElementById('mp-text').innerText = `${Math.floor(p.currentMP)} / ${maxMP}`;
         document.getElementById('hp-bar').style.width = (p.currentHP / maxHP * 100) + "%";
         document.getElementById('mp-bar').style.width = (p.currentMP / maxMP * 100) + "%";
-        document.getElementById('lvl').innerText = p.level; document.getElementById('exp').innerText = p.exp;
+        document.getElementById('lvl').innerText = p.level; document.getElementById('stat-pts').innerText = p.stat_points;
+
+        const list = document.getElementById('stat-list');
+        list.innerHTML = ['str','dex','int','vit'].map(s => `
+            <div class="stat-row">
+                <span>${s.toUpperCase()}: <b>${p[s]}</b></span>
+                ${p.stat_points > 0 ? `<button class="plus-btn" onclick="upStat('${s}')">+</button>` : ''}
+            </div>
+        `).join('');
     }
+
+    window.openModal = (id) => document.getElementById(id).style.display = 'flex';
+    window.closeModals = () => document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
+    window.upStat = (s) => { if(p.stat_points > 0) { p[s]++; p.stat_points--; updateUI(); } };
+    window.town = () => { if(player) player.setPosition(0, 0); showFT("TOWN!", "cyan", 0, 0); };
 
     function initPhaser() {
         if(phaserStarted) return; phaserStarted = true;
@@ -116,80 +169,91 @@
     }
 
     function preload() {
-        // HAZIR ASSETLER (Karakter ve Harita)
-        // Hazır bir çimen haritası (Repeating Tile)
         this.load.image('grass', 'https://labs.phaser.io/assets/textures/grass.png');
-        // Hazır RPG Karakteri (Sprite Sheet)
-        this.load.spritesheet('player_sprite', 'https://labs.phaser.io/assets/sprites/dude.png', { frameWidth: 32, frameHeight: 48 });
-        // Hazır Canavar Asseti
+        this.load.spritesheet('player_tex', 'https://labs.phaser.io/assets/sprites/dude.png', { frameWidth: 32, frameHeight: 48 });
         this.load.image('slime', 'https://labs.phaser.io/assets/sprites/slime.png');
+        this.load.image('drone', 'https://labs.phaser.io/assets/sprites/enemy-psera.png');
     }
 
     function create() {
         gameScene = this;
+        this.add.tileSprite(0, 0, 10000, 10000, 'grass').setOrigin(0.5);
+        this.cameras.main.setZoom(0.8); // Geniş görüş açısı (Attığın görseldeki gibi)
+
+        // KARAKTER (Class'a göre renk ve özellik)
+        player = this.physics.add.sprite(0, 0, 'player_tex', 4);
+        player.setTint(p.color); 
+        if(p.class === 'Warrior') player.setScale(1.5); // Warrior daha heybetli
+        else player.setScale(1.2);
         
-        // 1. HARİTA EKLEME (Infinite Grass)
-        // TileSprite kullanarak zemini attığın görseldeki gibi sonsuz yapıyoruz
-        this.add.tileSprite(0, 0, 5000, 5000, 'grass').setOrigin(0.5);
+        this.cameras.main.startFollow(player);
 
-        // 2. KARAKTER ÖLÇEĞİ (Zoom Out)
-        // Attığın görseldeki gibi karakteri küçük, dünyayı büyük göstermek için kamerayı uzaklaştırıyoruz
-        this.cameras.main.setZoom(0.85); // 1.0 yerine 0.85 yaparak "uzaktan bakış" sağlıyoruz
+        // FARKLI CANAVARLAR (Slime ve Drone)
+        createMob(300, 300, 'slime', 200);
+        createMob(-400, 200, 'drone', 400);
+        createMob(100, -500, 'slime', 150);
 
-        // 3. KARAKTER
-        player = this.physics.add.sprite(0, 0, 'player_sprite', 4);
-        player.setScale(1.2); // Karakteri çok devasa yapmıyoruz
-        this.cameras.main.startFollow(player); // Kamera karakteri izlesin
-
-        // 4. CANAVAR (Dışarıdan hazır Slime)
-        mob = this.physics.add.sprite(200, -100, 'slime');
-        mob.setScale(1.5);
-        
-        // Joystick
         const j = nipplejs.create({ zone: document.getElementById('joystick-zone'), mode: 'static', position: {left:'60px', bottom:'60px'}, color: '#00f0ff' });
         j.on('move', (e, d) => {
-            player.setVelocity(d.vector.x * 200, -d.vector.y * 200);
+            player.setVelocity(d.vector.x * 220, -d.vector.y * 220);
             if(d.vector.x !== 0) player.setFlipX(d.vector.x < 0);
         });
         j.on('end', () => player.setVelocity(0));
     }
 
-    window.performAttack = () => {
-        if(mobData.isDead) return;
-        const dist = Phaser.Math.Distance.Between(player.x, player.y, mob.x, mob.y);
-        if(dist < 150) {
-            let dmg = 15 + (p.str * 1.5); mobData.hp -= dmg;
-            showFT(`-${Math.floor(dmg)}`, "red", mob.x, mob.y);
-            gameScene.tweens.add({ targets: mob, alpha: 0.5, yoyo: true, duration: 100 });
-            if(mobData.hp <= 0) { 
-                mobData.isDead = true; mob.setVisible(false); 
-                document.getElementById('loot-box').style.display = 'flex'; 
-            }
-        } else { showFT("MENZİL DIŞI!", "gray", player.x, player.y - 40); }
-    };
+    function createMob(x, y, key, hp) {
+        let mob = gameScene.physics.add.sprite(x, y, key);
+        mob.setData('hp', hp); mob.setData('maxHP', hp); mob.setData('key', key);
+        monsters.push(mob);
+    }
 
-    window.collectLoot = () => {
-        p.exp += 100; document.getElementById('loot-box').style.display = 'none';
-        showFT("+100 EXP", "gold", player.x, player.y);
-        updateUI();
-        // RESPAWN (3 Saniye sonra)
-        setTimeout(() => { mobData.hp = mobData.maxHP; mobData.isDead = false; mob.setVisible(true); showFT("MOB DOĞDU!", "red", mob.x, mob.y); }, 3000);
+    window.performAttack = () => {
+        let hit = false;
+        monsters.forEach(mob => {
+            if(!mob.visible) return;
+            const dist = Phaser.Math.Distance.Between(player.x, player.y, mob.x, mob.y);
+            let range = (p.class === 'Archer' || p.class === 'Mage') ? 350 : 150;
+            
+            if(dist < range) {
+                hit = true;
+                let dmg = (15 + p.str * 2);
+                let currentHP = mob.getData('hp') - dmg;
+                mob.setData('hp', currentHP);
+                showFT(`-${Math.floor(dmg)}`, "red", mob.x, mob.y - 30);
+                gameScene.tweens.add({ targets: mob, alpha: 0.5, yoyo: true, duration: 100 });
+                
+                if(currentHP <= 0) {
+                    mob.setVisible(false);
+                    showFT("DEAD!", "gold", mob.x, mob.y);
+                    p.exp += 150; updateUI();
+                    // OTOMATİK RESPAWN (3 Saniye Sonra)
+                    gameScene.time.delayedCall(3000, () => {
+                        mob.setData('hp', mob.getData('maxHP'));
+                        mob.setVisible(true);
+                        showFT("RESPAWN!", "lime", mob.x, mob.y);
+                    });
+                }
+            }
+        });
+        if(!hit) showFT("MISS!", "gray", player.x, player.y - 40);
     };
 
     window.usePot = (t) => {
         const maxHP = 100 + (p.vit * 20); const maxMP = 50 + (p.int * 10);
-        if(t === 'HP') p.currentHP = Math.min(maxHP, p.currentHP + 50);
-        else p.currentMP = Math.min(maxMP, p.currentMP + 30);
-        showFT(`+${t}`, t === 'HP' ? 'red' : 'cyan', player.x, player.y - 50);
+        if(t === 'HP') p.currentHP = Math.min(maxHP, p.currentHP + 60);
+        else p.currentMP = Math.min(maxMP, p.currentMP + 40);
+        showFT(`+${t}`, t === 'HP' ? 'red' : 'cyan', player.x, player.y - 60);
         updateUI();
     };
 
-    window.useSkill = (s) => alert(p.class + " S" + s + " yeteneği kullanıldı!");
+    window.useSkill = (s) => showFT(p.class + " S" + s + "!", "orange", player.x, player.y - 80);
 
     function showFT(t, c, x, y) {
         const el = document.createElement('div'); el.className = 'floating-text'; el.innerText = t; el.style.color = c;
-        el.style.left = x + (window.innerWidth/2) + 'px'; // Kamera zoomu nedeniyle offset ayarı
-        el.style.top = y + (window.innerHeight/2) + 'px';
+        // Kamera zoom ve pozisyonuna göre düzeltilmiş koordinat
+        const screenX = (x - gameScene.cameras.main.worldView.x) * gameScene.cameras.main.zoom;
+        const screenY = (y - gameScene.cameras.main.worldView.y) * gameScene.cameras.main.zoom;
+        el.style.left = screenX + 'px'; el.style.top = screenY + 'px';
         document.body.appendChild(el); setTimeout(() => el.remove(), 800);
     }
 </script>
