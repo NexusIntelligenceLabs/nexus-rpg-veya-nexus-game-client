@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nexus Intelligence - True RPG v2.8</title>
+    <title>Nexus Intelligence - Pro Alpha v2.9</title>
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.9.0/nipplejs.min.js"></script>
     <style>
@@ -24,19 +24,18 @@
         #mp-bar { background: linear-gradient(90deg, #00f0ff, #005f73); }
         .bar-text { position: absolute; width: 100%; text-align: center; font-size: 11px; font-weight: bold; line-height: 20px; color: #fff; text-shadow: 1px 1px #000; z-index: 10; top: 0; left: 0; }
 
-        /* KASA (59 SLOT) & STATS */
+        /* MODALS (INV & STATS) */
         .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; background: #0a0a0a; border: 2px solid var(--neon-blue); z-index: 5000; display: none; flex-direction: column; padding: 15px; border-radius: 12px; box-shadow: 0 0 30px #000; }
         .inv-tabs { display: flex; gap: 5px; margin-bottom: 10px; }
         .inv-tabs div { flex: 1; padding: 10px; background: #222; text-align: center; font-size: 10px; border-radius: 5px; cursor: pointer; border: 1px solid #444; }
         .active-tab { background: var(--neon-blue) !important; color: #000 !important; font-weight: bold; }
-        
         .equip-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
         .eq-slot { height: 60px; background: #151515; border: 1px solid #333; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 8px; color: #555; }
         .bag-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; max-height: 200px; overflow-y: auto; display: none; }
-        .bag-slot { height: 45px; background: #151515; border: 1px solid #222; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 8px; color: #444; }
+        .bag-slot { height: 45px; background: #151515; border: 1px solid #222; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 8px; }
 
-        /* BUTONLAR */
-        #menu { position: fixed; top: 10px; right: 10px; z-index: 2000; display: flex; gap: 5px; }
+        /* UI BUTONLARI */
+        #menu { position: fixed; top: 10px; right: 10px; z-index: 2000; display: flex; gap: 6px; }
         .menu-btn { background: rgba(0,0,0,0.8); border: 1px solid var(--neon-blue); padding: 8px 12px; border-radius: 6px; color: #fff; font-size: 11px; font-weight: bold; cursor: pointer; }
         #joystick-zone { position: fixed; bottom: 40px; left: 30px; width: 120px; height: 120px; z-index: 1000; }
         #action-bar { position: fixed; bottom: 20px; right: 20px; z-index: 1000; display: none; flex-direction: column; align-items: flex-end; gap: 10px; }
@@ -53,15 +52,15 @@
 
     <div id="class-screen" class="screen hidden">
         <h2>SINIFINI SEÇ</h2>
-        <div class="card" onclick="selectClass('Warrior', 0xff0000, 2.0, 4)">⚔️ WARRIOR (Heybetli & Ağır)</div>
-        <div class="card" onclick="selectClass('Assassin', 0x555555, 1.2, 0)">🔪 ASSASSIN (Ufak & Hızlı)</div>
-        <div class="card" onclick="selectClass('Archer', 0x00ff00, 1.4, 1)">🏹 ARCHER (Çevik & İnce)</div>
-        <div class="card" onclick="selectClass('Mage', 0x00f0ff, 1.3, 2)">🔮 MAGE (Pelerinli & Enerjik)</div>
-        <div class="card" onclick="selectClass('Priest', 0xffd700, 1.5, 3)">🛡️ PRIEST (Kutsal & Parlak)</div>
+        <div class="card" onclick="selectClass('Warrior', 0xff0000, 2.0, 4)">⚔️ WARRIOR</div>
+        <div class="card" onclick="selectClass('Assassin', 0x555555, 1.2, 0)">🔪 ASSASSIN</div>
+        <div class="card" onclick="selectClass('Archer', 0x00ff00, 1.4, 1)">🏹 ARCHER</div>
+        <div class="card" onclick="selectClass('Mage', 0x00f0ff, 1.3, 2)">🔮 MAGE</div>
+        <div class="card" onclick="selectClass('Priest', 0xffd700, 1.5, 3)">🛡️ PRIEST</div>
     </div>
 
     <div id="hud" style="display:none;">
-        <div id="p-info" style="font-size:11px; font-weight:bold; color:var(--neon-blue); margin-bottom:8px;">PILOT: ---</div>
+        <div id="p-info" style="font-size:11px; font-weight:bold; color:var(--neon-blue); margin-bottom:8px;">---</div>
         <div class="bar-container"><div id="hp-bar" class="bar-fill"></div><div class="bar-text" id="hp-text">--- / ---</div></div>
         <div class="bar-container"><div id="mp-bar" class="bar-fill"></div><div class="bar-text" id="mp-text">--- / ---</div></div>
         <div style="font-size:10px; color:#0f0;">LVL: <span id="lvl">1</span> | STAT: <span id="stat-pts">0</span></div>
@@ -89,7 +88,7 @@
 
     <div id="char-panel" class="modal">
         <div style="display:flex; justify-content:space-between; margin-bottom:15px; border-bottom:1px solid #333; padding-bottom:10px;">
-            <span style="color:var(--neon-blue); font-weight:bold;">SİBER-VERİLER (STATS)</span>
+            <span style="color:var(--neon-blue); font-weight:bold;">STATS</span>
             <span onclick="closeModals()" style="color:red; cursor:pointer;">[X]</span>
         </div>
         <div id="stat-list"></div>
@@ -99,7 +98,7 @@
         <div class="inv-tabs">
             <div id="tab-eq" class="active-tab" onclick="switchInv('eq')">EKİPMAN (9)</div>
             <div id="tab-bag" onclick="switchInv('bag')">ÇANTA (50)</div>
-            <div onclick="closeModals()" style="color:red; flex:0.2;">[X]</div>
+            <div onclick="closeModals()" style="color:red; flex:0.2; text-align:center;">X</div>
         </div>
         <div id="eq-view" class="equip-grid">
             <div class="eq-slot">KASK</div><div class="eq-slot">KOLYE</div><div class="eq-slot">SİLAH</div>
@@ -113,10 +112,10 @@
     let p = { 
         username: 'Pilot', class: '', color: 0xFFFFFF, scale: 1.2, frame: 4, 
         level: 1, exp: 0, str: 10, vit: 10, int: 10, dex: 10, stat_points: 5,
-        currentHP: 300, currentMP: 150
+        currentHP: 300, currentMP: 150, isAttacking: false
     };
     let monsters = [];
-    let gameScene, player, phaserStarted = false;
+    let gameScene, player, phaserStarted = false, aura;
 
     window.onload = () => setTimeout(() => { document.getElementById('loading-screen').classList.add('hidden'); document.getElementById('class-screen').classList.remove('hidden'); }, 1000);
 
@@ -127,87 +126,67 @@
         document.getElementById('hud').style.display = 'block';
         document.getElementById('menu').style.display = 'flex';
         document.getElementById('action-bar').style.display = 'flex';
-        
         const bag = document.getElementById('bag-view');
         for(let i=0; i<50; i++) { let s = document.createElement('div'); s.className = 'bag-slot'; s.innerText = "--"; bag.appendChild(s); }
-        
         updateUI(); initPhaser();
     }
 
     function updateUI() {
         const maxHP = 100 + (p.vit * 20); const maxMP = 50 + (p.int * 10);
         p.currentHP = Math.min(p.currentHP, maxHP); p.currentMP = Math.min(p.currentMP, maxMP);
-        
         document.getElementById('p-info').innerText = `${p.username.toUpperCase()} [${p.class}]`;
         document.getElementById('hp-text').innerText = `${Math.floor(p.currentHP)} / ${maxHP}`;
         document.getElementById('mp-text').innerText = `${Math.floor(p.currentMP)} / ${maxMP}`;
         document.getElementById('hp-bar').style.width = (p.currentHP / maxHP * 100) + "%";
         document.getElementById('mp-bar').style.width = (p.currentMP / maxMP * 100) + "%";
         document.getElementById('lvl').innerText = p.level; document.getElementById('stat-pts').innerText = p.stat_points;
-
         const list = document.getElementById('stat-list');
-        list.innerHTML = ['str','dex','int','vit'].map(s => `
-            <div class="stat-row">
-                <span>${s.toUpperCase()}: <b>${p[s]}</b></span>
-                ${p.stat_points > 0 ? `<button onclick="upStat('${s}')" style="background:#0f0; border:none; padding:5px 12px; border-radius:4px; font-weight:bold;">+</button>` : ''}
-            </div>
-        `).join('');
+        list.innerHTML = ['str','dex','int','vit'].map(s => `<div style="display:flex; justify-content:space-between; margin-bottom:5px;"><span>${s.toUpperCase()}: <b>${p[s]}</b></span>${p.stat_points > 0 ? `<button onclick="upStat('${s}')" style="background:#0f0; border:none; padding:2px 8px;">+</button>` : ''}</div>`).join('');
     }
 
     window.openModal = (id) => document.getElementById(id).style.display = 'flex';
     window.closeModals = () => document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
-    window.switchInv = (t) => {
-        document.getElementById('eq-view').style.display = t === 'eq' ? 'grid' : 'none';
-        document.getElementById('bag-view').style.display = t === 'bag' ? 'grid' : 'none';
-        document.getElementById('tab-eq').className = t === 'eq' ? 'active-tab' : '';
-        document.getElementById('tab-bag').className = t === 'bag' ? 'active-tab' : '';
-    };
-
+    window.switchInv = (t) => { document.getElementById('eq-view').style.display = t === 'eq' ? 'grid' : 'none'; document.getElementById('bag-view').style.display = t === 'bag' ? 'grid' : 'none'; document.getElementById('tab-eq').className = t === 'eq' ? 'active-tab' : ''; document.getElementById('tab-bag').className = t === 'bag' ? 'active-tab' : ''; };
     window.upStat = (s) => { if(p.stat_points > 0) { p[s]++; p.stat_points--; updateUI(); } };
-    window.town = () => { if(player) { player.setPosition(0, 0); showFT("TOWN!", "cyan", 0, 0); } };
+    window.town = () => { if(player) player.setPosition(0, 0); };
 
     function initPhaser() {
         if(phaserStarted) return; phaserStarted = true;
-        const config = { type: Phaser.AUTO, parent: 'game-container', width: window.innerWidth, height: window.innerHeight, physics: { default: 'arcade' }, scene: { preload: preload, create: create } };
+        const config = { type: Phaser.AUTO, parent: 'game-container', width: window.innerWidth, height: window.innerHeight, physics: { default: 'arcade' }, scene: { preload: preload, create: create, update: update } };
         new Phaser.Game(config);
     }
 
     function preload() {
         this.load.image('grass', 'https://labs.phaser.io/assets/textures/grass.png');
-        // Farklı karakterlerin sprite'larını içeren kütüphaneler
         this.load.spritesheet('chars', 'https://labs.phaser.io/assets/sprites/dude.png', { frameWidth: 32, frameHeight: 48 });
         this.load.image('slime', 'https://labs.phaser.io/assets/sprites/slime.png');
-        this.load.image('drone', 'https://labs.phaser.io/assets/sprites/enemy-psera.png');
     }
 
     function create() {
         gameScene = this;
         this.add.tileSprite(0, 0, 10000, 10000, 'grass').setOrigin(0.5);
-        this.cameras.main.setZoom(0.8);
+        this.cameras.main.setZoom(0.85);
 
-        // KARAKTER ÖZELLEŞTİRME (Sınıfa göre İnsan Model Farkı)
-        player = this.physics.add.sprite(0, 0, 'chars', p.frame);
-        player.setScale(p.scale);
-        player.setTint(p.color);
-        
-        // Aura Efekti (Sınıfını belli etmek için)
-        const aura = this.add.circle(0, 0, 30, p.color, 0.2);
-        this.physics.add.existing(aura);
-        
+        player = this.physics.add.sprite(0, 0, 'chars', p.frame).setScale(p.scale).setTint(p.color);
+        aura = this.add.circle(0, 0, 30, p.color, 0.2);
         this.cameras.main.startFollow(player);
 
-        // OTOMATİK RESPAWN CANAVARLAR
-        createMob(300, 200, 'slime', 200);
-        createMob(-400, -300, 'drone', 500);
+        createMob(300, 200, 'slime', 500);
 
         const j = nipplejs.create({ zone: document.getElementById('joystick-zone'), mode: 'static', position: {left:'60px', bottom:'60px'}, color: '#00f0ff' });
         j.on('move', (e, d) => {
-            player.setVelocity(d.vector.x * 210, -d.vector.y * 210);
-            aura.setPosition(player.x, player.y);
-            if(d.vector.x !== 0) player.setFlipX(d.vector.x < 0);
+            // OKÇU VE MAGE KURALLARI: Saldırıyorsa durmalı.
+            if(p.isAttacking && (p.class === 'Archer' || p.class === 'Mage')) {
+                player.setVelocity(0);
+            } else {
+                player.setVelocity(d.vector.x * 220, -d.vector.y * 220);
+                if(d.vector.x !== 0) player.setFlipX(d.vector.x < 0);
+            }
         });
         j.on('end', () => player.setVelocity(0));
     }
+
+    function update() { if(player) aura.setPosition(player.x, player.y); }
 
     function createMob(x, y, key, hp) {
         let mob = gameScene.physics.add.sprite(x, y, key);
@@ -216,22 +195,33 @@
     }
 
     window.performAttack = () => {
+        if(p.isAttacking) return;
+        p.isAttacking = true;
+
         monsters.forEach(mob => {
             if(!mob.visible) return;
             const dist = Phaser.Math.Distance.Between(player.x, player.y, mob.x, mob.y);
             let range = (p.class === 'Archer' || p.class === 'Mage') ? 350 : 160;
+            
+            // OKÇU VE MAGE ATAK YAPINCA DURMALI
+            if(p.class === 'Archer' || p.class === 'Mage') player.setVelocity(0);
+
             if(dist < range) {
-                let dmg = (15 + p.str * 2); let curHP = mob.getData('hp') - dmg;
+                let dmg = (15 + p.str * 2);
+                let curHP = mob.getData('hp') - dmg;
                 mob.setData('hp', curHP);
                 showFT(`-${Math.floor(dmg)}`, "red", mob.x, mob.y);
                 if(curHP <= 0) {
                     mob.setVisible(false); p.exp += 150; updateUI();
                     gameScene.time.delayedCall(3000, () => {
-                        mob.setData('hp', mob.getData('maxHP')); mob.setVisible(true); showFT("RESPAWN!", "lime", mob.x, mob.y);
+                        mob.setData('hp', mob.getData('maxHP')); mob.setVisible(true);
                     });
                 }
             }
         });
+
+        // SLIDE / COMBO SÜRESİ (500ms sonra tekrar vurabilir)
+        setTimeout(() => { p.isAttacking = false; }, 500);
     };
 
     window.usePot = (t) => {
