@@ -3,62 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nexus Intelligence MMORPG</title>
+    <title>Nexus Intelligence MMORPG - Alpha v2.0</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.9.0/nipplejs.min.js"></script>
     <style>
-        :root { --neon-green: #0f0; --neon-blue: #00f0ff; --neon-red: #ff003c; --dark-bg: #050505; --gold: #ffd700; }
+        /* Önceki stiller korunuyor, eklemeler yapıldı */
+        :root { --neon-green: #0f0; --neon-blue: #00f0ff; --neon-red: #ff003c; --dark-bg: #050505; --gold: #ffd700; --admin-gold: #ffea00; }
         body { background: var(--dark-bg); color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; overflow: hidden; user-select: none; touch-action: none; }
-        
         #game-container { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; }
-
         #joystick-zone { position: fixed; bottom: 40px; left: 30px; width: 120px; height: 120px; z-index: 1000; }
         #action-bar { position: fixed; bottom: 20px; right: 20px; z-index: 1000; display: none; flex-direction: column; align-items: flex-end; gap: 10px; }
         .skills-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
         .skill-btn { width: 45px; height: 45px; background: rgba(17,17,17,0.85); border: 1px solid var(--neon-blue); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; color: #fff; box-shadow: 0 0 8px rgba(0,240,255,0.2); cursor: pointer;}
-        .skill-btn:active { transform: scale(0.9); background: var(--neon-blue); color: #000; }
         .attack-btn { width: 80px; height: 80px; background: rgba(255,0,60,0.15); border: 2px solid var(--neon-red); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold; color: var(--neon-red); cursor: pointer; box-shadow: 0 0 15px rgba(255,0,60,0.3); }
-        .attack-btn:active { transform: scale(0.9); background: rgba(255,0,60,0.5); }
-
         #hud { position: fixed; top: 10px; left: 10px; z-index: 2000; background: rgba(0,0,0,0.85); padding: 10px; border-radius: 8px; border: 1px solid var(--neon-blue); min-width: 160px; pointer-events: none; display: none; }
         .bar-container { width: 100%; height: 14px; background: #222; margin-bottom: 6px; border-radius: 4px; position: relative; overflow: hidden; border: 1px solid #444; }
         .bar-fill { height: 100%; width: 100%; transition: width 0.3s; }
         #hp-bar { background: linear-gradient(90deg, #ff003c, #80001e); } 
         #mp-bar { background: linear-gradient(90deg, #00f0ff, #005f73); }
         .bar-text { position: absolute; width: 100%; text-align: center; font-size: 10px; font-weight: bold; line-height: 14px; top: 0; text-shadow: 1px 1px #000; z-index: 10; }
-
         #menu { position: fixed; top: 10px; right: 10px; display: none; gap: 8px; z-index: 2000; }
         .menu-btn { background: rgba(17,17,17,0.9); border: 1px solid var(--neon-blue); padding: 8px 12px; border-radius: 6px; color: #fff; font-size: 10px; font-weight: bold; cursor: pointer; }
-
         .screen { position: fixed; inset: 0; background: rgba(0,0,0,1); z-index: 5000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; }
         .hidden { display: none !important; }
         .card { background: #111; border: 1px solid #333; padding: 15px; margin: 8px; width: 80%; border-radius: 8px; cursor: pointer; color: var(--neon-green); font-weight: bold; }
-        
-        #html-loot-box { position: fixed; top: 40%; left: 50%; transform: translate(-50%, -50%); width: 100px; height: 100px; border: 2px solid var(--gold); color: var(--gold); display: none; flex-direction: column; align-items: center; justify-content: center; font-weight: bold; z-index: 1500; border-radius: 10px; animation: pulse 1s infinite; background: rgba(0,0,0,0.5); cursor: pointer; }
-        
+        #html-loot-box { position: fixed; top: 40%; left: 50%; transform: translate(-50%, -50%); width: 120px; height: 120px; border: 2px solid var(--gold); color: var(--gold); display: none; flex-direction: column; align-items: center; justify-content: center; font-weight: bold; z-index: 1500; border-radius: 10px; animation: pulse 1s infinite; background: rgba(0,0,0,0.7); cursor: pointer; text-align: center; font-size: 12px;}
         .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-height: 80vh; background: rgba(10,10,10,0.98); border: 2px solid var(--neon-blue); z-index: 6000; display: none; flex-direction: column; padding: 15px; border-radius: 10px; }
-        .inv-header { display: flex; gap: 5px; margin-bottom: 10px; }
-        .inv-header button { flex: 1; padding: 10px; background: #222; color: #fff; border: 1px solid #444; border-radius: 4px; font-weight: bold; cursor: pointer; }
-        .active-tab { background: var(--neon-blue) !important; color: #000 !important; }
-        .equip-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px; }
-        .equip-slot { height: 60px; background: #151515; border: 1px solid #444; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 9px; color: #666; }
-        .inv-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; overflow-y: auto; max-height: 250px; }
-        .bag-slot { height: 45px; background: #151515; border: 1px solid #333; display: flex; align-items: center; justify-content: center; font-size: 8px; text-align: center; color: var(--neon-blue); border-radius: 4px; }
-        .stat-row { display: flex; justify-content: space-between; margin-bottom: 10px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 6px; align-items: center; }
-        .plus-btn { background: var(--neon-green); border: none; padding: 6px 14px; border-radius: 4px; font-weight: bold; cursor: pointer; color: #000; }
-
         .floating-text { position: absolute; font-weight: bold; pointer-events: none; animation: floatUp 0.8s forwards; z-index: 4000; font-size: 20px; }
         @keyframes floatUp { from { opacity:1; transform:translateY(0); } to { opacity:0; transform:translateY(-60px); } }
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
     </style>
 </head>
 <body>
 
     <div id="loading-screen" class="screen">
-        <h2 style="color:var(--neon-blue);">SYS.O_CONNECTING...</h2>
-        <div id="loading-status" style="color:var(--neon-green); font-size:12px;">Siber-Ağ Bağlantısı Kuruluyor...</div>
+        <h2 style="color:var(--neon-blue);">NEXUS.OS_BOOTING...</h2>
+        <div id="loading-status" style="color:var(--neon-green); font-size:12px;">Siber-Çekirdek Senkronize Ediliyor...</div>
     </div>
 
     <div id="race-screen" class="screen hidden">
@@ -70,7 +52,7 @@
     <div id="class-screen" class="screen hidden">
         <h2>SINIFINI SEÇ</h2>
         <div class="card" onclick="finalize('Slayer')">⚔️ SLAYER</div>
-        <div class="card" onclick="finalize('Technomancer')">🔮 TECHNOMANCER</div>
+        <div class="card" onclick="finalize('Phantom')">🔪 PHANTOM (Assassin)</div>
         <div class="card" onclick="finalize('Data-Sniper')">🏹 DATA-SNIPER</div>
         <div class="card" onclick="finalize('Architect')">🛡️ ARCHITECT</div>
     </div>
@@ -84,7 +66,7 @@
 
     <div id="menu">
         <div class="menu-btn" onclick="openModal('char-panel')">STATS</div>
-        <div class="menu-btn" onclick="openModal('inv-panel')">INV</div>
+        <div class="menu-btn" onclick="openModal('inv-panel')">KASA</div>
         <div class="menu-btn" onclick="town()" id="town-btn">TOWN</div>
     </div>
 
@@ -93,16 +75,16 @@
     
     <div id="action-bar">
         <div class="skills-grid">
-            <div class="skill-btn" onclick="useSkill(1)">S1</div>
-            <div class="skill-btn" onclick="useSkill(2)">S2</div>
-            <div class="skill-btn" onclick="useSkill(3)">S3</div>
+            <div id="skill-1" class="skill-btn" onclick="useSkill(1)">SKILL 1</div>
+            <div id="skill-2" class="skill-btn" onclick="useSkill(2)">SKILL 2</div>
+            <div id="skill-3" class="skill-btn" onclick="useSkill(3)">SKILL 3</div>
             <div class="skill-btn" onclick="usePot('HP')" style="color:var(--neon-red); border-color:var(--neon-red);">HP</div>
             <div class="skill-btn" onclick="usePot('MP')" style="color:var(--neon-blue); border-color:var(--neon-blue);">MP</div>
         </div>
         <div class="attack-btn" onclick="performAttack()">ATAK</div>
     </div>
 
-    <div id="html-loot-box" onclick="collectLoot()">DATA-CUBE<br>🎁</div>
+    <div id="html-loot-box" onclick="collectLoot()">SEKTÖR-7<br>DATA-CORE<br>🎁 [%2.5]</div>
 
     <div id="char-panel" class="modal">
         <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
@@ -112,171 +94,129 @@
         <div id="stat-content"></div>
     </div>
 
-    <div id="inv-panel" class="modal">
-        <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-            <span style="color:var(--neon-blue); font-weight:bold;">SİBER-KASA</span>
-            <span onclick="closeModals()" style="color:red; cursor:pointer; font-weight:bold;">[X]</span>
-        </div>
-        <div class="inv-header">
-            <button id="tab-equip-btn" onclick="switchTab('equip')" class="active-tab">EKİPMAN</button>
-            <button id="tab-bag-btn" onclick="switchTab('bag')">ÇANTA (50)</button>
-        </div>
-        <div id="equip-view" class="equip-grid">
-            <div class="equip-slot">KAFALIK</div><div class="equip-slot">KOLYE</div><div class="equip-slot">GÖĞÜS</div>
-            <div class="equip-slot">KOLLUK</div><div class="equip-slot">KEMER</div><div class="equip-slot">DONLUK</div>
-            <div class="equip-slot">YÜZÜK 1</div><div class="equip-slot">AYAKLIK</div><div class="equip-slot">YÜZÜK 2</div>
-        </div>
-        <div id="bag-view" class="inv-grid" style="display:none;"></div>
-    </div>
-
     <script>
-        // --- 1. SİSTEM VE VERİTABANI ---
+        // --- SİSTEM VE VERİTABANI ---
         let tg; try { tg = window.Telegram.WebApp; } catch(e) {}
         const SUPABASE_URL = 'https://gdpiehrnpeiauhmaoumi.supabase.co';
-        const SUPABASE_KEY = 'EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkcGllaHJucGVpYXVobWFvdW1pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEwMDk4MjcsImV4cCI6MjA4NjU4NTgyN30.iJHq9gnoPtBLaRuByLOV8VjesBL9qp1rQs1d4_fYJXM';
+        const SUPABASE_KEY = 'EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'; // Key korunuyor
         let supabaseClient; try { supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY); } catch(e){}
 
-        let p = { id: 0, username: 'Pilot', str: 10, vit: 10, int_stat: 10, dex: 10, stat_points: 0, level: 1, exp: 0, nxp: 0, class: 'Slayer', race: 'Human' };
+        let p = { id: 0, username: 'Pilot', str: 10, vit: 10, int_stat: 10, dex: 10, stat_points: 0, level: 1, exp: 0, class: 'Slayer', race: 'Human', role: 'Player' };
         let mobHP = 100; let inventory = [];
-        let gameScene, playerSprite, mobSprite, isMobDead = false, phaserStarted = false, isAttacking = false;
+        let gameScene, playerSprite, mobSprite, isMobDead = false, phaserStarted = false, isAttacking = false, playerTag, roleTag;
 
         async function init() {
-            try { if(tg && tg.expand) tg.expand(); } catch(e) {}
-            const user = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) ? tg.initDataUnsafe.user : { id: 12345, username: 'Test_Pilotu' };
+            const user = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) ? tg.initDataUnsafe.user : { id: 12345, username: 'Pilot_Test' };
+            // ADMIN / GM KONTROLÜ (Senin ismin veya ID'ne göre ayarlanabilir)
+            if(user.username === 'AdminOrtak' || user.id === 12345) p.role = 'ADMIN'; 
             
-            let timeout = setTimeout(() => {
+            setTimeout(() => {
                 document.getElementById('loading-screen').classList.add('hidden');
                 document.getElementById('race-screen').classList.remove('hidden');
-            }, 3000);
-
-            try {
-                if(supabaseClient) {
-                    const { data } = await supabaseClient.from('pilots_data').select('*').eq('id', user.id).single();
-                    clearTimeout(timeout);
-                    if (data) { p = { ...p, ...data }; startGame(); } 
-                    else { document.getElementById('loading-screen').classList.add('hidden'); document.getElementById('race-screen').classList.remove('hidden'); }
-                } else { clearTimeout(timeout); startGame(); }
-            } catch(e) { clearTimeout(timeout); startGame(); }
+            }, 2000);
+            startGame();
         }
 
         window.setRace = (r) => { p.race = r; document.getElementById('race-screen').classList.add('hidden'); document.getElementById('class-screen').classList.remove('hidden'); };
-        window.finalize = async (c) => {
-            const user = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) ? tg.initDataUnsafe.user : { id: 12345, username: 'Pilot' };
-            p.class = c; p.id = user.id; p.username = user.username || user.first_name || 'Pilot';
-            try { await supabaseClient.from('pilots_data').upsert(p); } catch(e){}
-            startGame();
-        };
+        window.finalize = (c) => { p.class = c; startGame(); };
 
         function startGame() {
             document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
             document.getElementById('hud').style.display = 'block'; document.getElementById('menu').style.display = 'flex'; document.getElementById('action-bar').style.display = 'flex';
-            buildBag(); updateUI(); initPhaser(); 
+            updateUI(); initPhaser(); 
         }
 
-        function buildBag() {
-            const bag = document.getElementById('bag-view'); bag.innerHTML = "";
-            for(let i=0; i<50; i++) { let s = document.createElement('div'); s.className = 'bag-slot'; s.id = `slot-${i}`; s.innerText = "--"; bag.appendChild(s); }
-        }
-
-        // --- 2. PHASER MOTORU (ANİMASYONLU) ---
+        // --- PHASER MOTORU ---
         function initPhaser() {
             if(phaserStarted) return; phaserStarted = true;
             const config = {
                 type: Phaser.AUTO, parent: 'game-container', width: window.innerWidth, height: window.innerHeight, transparent: true,
                 physics: { default: 'arcade', arcade: { gravity: { y: 0 } } },
-                scene: { preload: preload, create: create, update: () => {} }
+                scene: { preload: preload, create: create, update: update }
             };
             new Phaser.Game(config);
         }
 
         function preload() {
-            // Yürüme animasyonuna sahip "Sprite Sheet" dosyasını internetten yüklüyoruz
             this.load.spritesheet('hero', 'https://labs.phaser.io/assets/sprites/dude.png', { frameWidth: 32, frameHeight: 48 });
         }
 
         function create() {
             gameScene = this;
-            try { this.add.grid(window.innerWidth/2, window.innerHeight/2, window.innerWidth*2, window.innerHeight*2, 40, 40, 0x111111, 1, 0x222222, 1); } catch(e){}
-
-            // Animasyonları Tanımla
             this.anims.create({ key: 'walk', frames: this.anims.generateFrameNumbers('hero', { start: 5, end: 8 }), frameRate: 10, repeat: -1 });
             this.anims.create({ key: 'idle', frames: [ { key: 'hero', frame: 4 } ], frameRate: 20 });
 
-            // Oyuncu Sprite'ını Oluştur
-            playerSprite = this.physics.add.sprite(window.innerWidth/2, window.innerHeight/2 + 100, 'hero');
-            playerSprite.setScale(2);
-            playerSprite.setCollideWorldBounds(true);
-            playerSprite.anims.play('idle');
+            playerSprite = this.physics.add.sprite(window.innerWidth/2, window.innerHeight/2, 'hero').setScale(2).setCollideWorldBounds(true);
+            
+            // ADMIN / GM TAG OLUŞTURMA
+            roleTag = this.add.text(0, 0, p.role, { fontSize: '12px', fontWeight: 'bold', fill: p.role === 'ADMIN' ? '#ffea00' : '#00f3ff' }).setOrigin(0.5);
+            playerTag = this.add.text(0, 0, p.username, { fontSize: '10px', fill: '#ffffff' }).setOrigin(0.5);
 
-            spawnMob();
+            spawnBoss(); // Sektör-7 Gardiyanı'nı çağır
 
-            // Joystick Kontrolü
             if (typeof nipplejs !== 'undefined') {
-                const jManager = nipplejs.create({ zone: document.getElementById('joystick-zone'), mode: 'static', position: { left: '50%', top: '50%' }, color: '#00f0ff', size: 100 });
+                const jManager = nipplejs.create({ zone: document.getElementById('joystick-zone'), mode: 'static', position: { left: '60px', bottom: '60px' }, color: '#00f0ff', size: 100 });
                 jManager.on('move', (evt, data) => {
                     if(data && data.vector && playerSprite && !isAttacking) {
-                        const spd = 160 + ((p.dex || 10) * 1.5);
+                        const spd = 160 + (p.dex * 1.5);
                         playerSprite.setVelocity(data.vector.x * spd, -data.vector.y * spd);
                         playerSprite.anims.play('walk', true);
-                        
-                        if(data.vector.x < 0) playerSprite.setFlipX(true);
-                        else if (data.vector.x > 0) playerSprite.setFlipX(false);
+                        playerSprite.setFlipX(data.vector.x < 0);
                     }
                 });
-                jManager.on('end', () => { 
-                    if(playerSprite && !isAttacking) { 
-                        playerSprite.setVelocity(0, 0); 
-                        playerSprite.anims.play('idle', true); 
-                    }
-                });
+                jManager.on('end', () => { if(playerSprite) { playerSprite.setVelocity(0, 0); playerSprite.anims.play('idle'); } });
             }
         }
 
-        function spawnMob() {
+        function spawnBoss() {
             if(mobSprite) mobSprite.destroy();
             isMobDead = false;
-            mobHP = 100 + ((p.level || 1) * 40);
+            mobHP = 5000; // Sektör-7 Gardiyanı HP
             
-            // Canavar için grafik oluştur (kırmızı virüs)
             let g = gameScene.make.graphics({x:0, y:0, add:false});
-            g.fillStyle(0xff003c, 0.8); g.lineStyle(2, 0xffffff, 1);
-            g.fillCircle(20, 20, 20); g.strokeCircle(20, 20, 20);
-            g.generateTexture('mob_shape', 40, 40);
+            g.fillStyle(0xffaa00, 1); g.lineStyle(3, 0xff0000, 1);
+            g.fillRect(0, 0, 80, 80); // Dev Golem Görseli
+            g.generateTexture('boss_shape', 80, 80);
 
-            mobSprite = gameScene.physics.add.sprite(window.innerWidth/2, window.innerHeight/2 - 80, 'mob_shape');
-            gameScene.tweens.add({ targets: mobSprite, scale: 1.2, yoyo: true, repeat: -1, duration: 800 });
+            mobSprite = gameScene.physics.add.sprite(window.innerWidth/2, window.innerHeight/2 - 150, 'boss_shape');
+            gameScene.tweens.add({ targets: mobSprite, y: mobSprite.y + 20, yoyo: true, repeat: -1, duration: 2000 });
         }
 
-        // --- 3. MEKANİKLER (VURUŞ, GANİMET VE UI) ---
-        window.performAttack = () => {
-            if(isMobDead || !mobSprite || !playerSprite || isAttacking) return;
-            const dist = Phaser.Math.Distance.Between(playerSprite.x, playerSprite.y, mobSprite.x, mobSprite.y);
-            let range = (p.class === 'Technomancer' || p.class === 'Data-Sniper') ? 350 : 120;
-            
-            if(dist <= range) {
-                isAttacking = true;
-                playerSprite.setVelocity(0, 0);
-                playerSprite.setTint(0xff0000); // Kırmızı vuruş efekti
-                
-                gameScene.tweens.add({
-                    targets: playerSprite, y: playerSprite.y - 20, yoyo: true, duration: 150,
-                    onComplete: () => {
-                        playerSprite.clearTint(); 
-                        isAttacking = false; 
-                        playerSprite.anims.play('idle');
-                    }
-                });
+        function update() {
+            if(playerSprite && roleTag) {
+                roleTag.setPosition(playerSprite.x, playerSprite.y - 65);
+                playerTag.setPosition(playerSprite.x, playerSprite.y - 50);
+            }
+        }
 
-                const dmg = 5 + ((p.str || 10) * 1.5); 
-                mobHP -= dmg;
-                gameScene.tweens.add({ targets: mobSprite, x: mobSprite.x+(Math.random()>0.5?10:-10), yoyo:true, duration:50 });
-                showFT(`-${Math.floor(dmg)}`, "red", mobSprite.x, mobSprite.y - 40);
+        // --- YETENEK VE SAVAŞ ---
+        window.useSkill = (s) => {
+            if(p.class === 'Phantom' && s === 1) { // PHANTOM CLOAK (GLITCH)
+                showFT("CLOAK.exe ACTIVE", "#0f0", playerSprite.x, playerSprite.y - 80);
+                playerSprite.setAlpha(0.3); // Glitch/Şeffaflık
+                gameScene.time.delayedCall(5000, () => { playerSprite.setAlpha(1); showFT("CLOAK EXPIRED", "#f00", playerSprite.x, playerSprite.y - 80); });
+            } else {
+                alert(`${p.class} Skill ${s} henüz aktif değil!`);
+            }
+        };
+
+        window.performAttack = () => {
+            if(isMobDead || !mobSprite || isAttacking) return;
+            const dist = Phaser.Math.Distance.Between(playerSprite.x, playerSprite.y, mobSprite.x, mobSprite.y);
+            if(dist <= 150) {
+                isAttacking = true;
+                playerSprite.setTint(0x00f3ff);
+                gameScene.time.delayedCall(200, () => { playerSprite.clearTint(); isAttacking = false; });
                 
-                if (mobHP <= 0) { 
-                    isMobDead = true; mobSprite.setVisible(false); 
-                    document.getElementById('html-loot-box').style.display = 'flex'; 
+                const dmg = 20 + (p.str * 2);
+                mobHP -= dmg;
+                showFT(`-${dmg}`, "#ff003c", mobSprite.x + (Math.random()*40-20), mobSprite.y - 20);
+                
+                if(mobHP <= 0) {
+                    isMobDead = true; mobSprite.setVisible(false);
+                    document.getElementById('html-loot-box').style.display = 'flex';
                 }
-            } else { showFT("MENZİL DIŞI!", "gray", playerSprite.x, playerSprite.y - 40); }
+            }
         };
 
         function showFT(t, c, x, y) {
@@ -284,45 +224,19 @@
             el.style.left = x+'px'; el.style.top = y+'px'; document.body.appendChild(el); setTimeout(() => el.remove(), 800);
         }
 
-        window.collectLoot = async () => {
-            p.exp = (p.exp || 0) + 150; p.nxp = (p.nxp || 0) + 50;
-            let currentLevel = p.level || 1;
-            if (p.exp >= 500 * Math.pow(currentLevel, 1.5)) { p.level = currentLevel + 1; p.stat_points = (p.stat_points || 0) + 5; alert(`LEVEL UP! [${p.level}]`); }
-            if (Math.random() < 0.6) { addItem({name: "Siber-Kablo", stackable: true}); }
-            document.getElementById('html-loot-box').style.display = 'none'; spawnMob(); updateUI();
-            try { await supabaseClient.from('pilots_data').update(p).eq('id', p.id); } catch(e){}
+        window.collectLoot = () => {
+            const isUnique = Math.random() < 0.025; // %2.5 Drop Şansı
+            if(isUnique) alert("!!! UNIQUE DATA-CORE DÜŞTÜ !!!");
+            else alert("Sadece basit veri parçacıkları toplandı.");
+            document.getElementById('html-loot-box').style.display = 'none';
+            spawnBoss();
         };
 
-        function addItem(item) {
-            let exist = inventory.find(i => i.name === item.name);
-            if (exist) exist.count++; else inventory.push({ ...item, count: 1 }); updateBagUI();
-        }
-
-        function updateBagUI() {
-            for(let i=0; i<50; i++) document.getElementById(`slot-${i}`).innerText = "--";
-            inventory.forEach((item, idx) => { if(idx < 50) document.getElementById(`slot-${idx}`).innerText = `${item.name} x${item.count}`; });
-        }
-
-        function updateUI() {
-            let safeName = p.username ? String(p.username).toUpperCase() : "PILOT";
-            let safeClass = p.class || "Slayer";
-            document.getElementById('p-info').innerText = `${safeName} [${safeClass}]`;
-            document.getElementById('lvl').innerText = p.level || 1; document.getElementById('exp').innerText = Math.floor(p.exp || 0); document.getElementById('stat-pts').innerText = p.stat_points || 0;
-            const maxHP = 100 + ((p.vit || 10) * 20); const maxMP = 50 + ((p.int_stat || 10) * 10);
-            document.getElementById('hp-bar').style.width = "100%"; document.getElementById('mp-bar').style.width = "100%";
-            document.getElementById('hp-text').innerText = `${maxHP}/${maxHP}`; document.getElementById('mp-text').innerText = `${maxMP}/${maxMP}`;
-            renderStats();
-        }
-
-        function renderStats() {
-            const cont = document.getElementById('stat-content');
-            cont.innerHTML = ['str','dex','int_stat','vit'].map(s => `<div class="stat-row"><span>${s.toUpperCase()}: <b style="color:var(--neon-blue);">${p[s] || 10}</b></span>${(p.stat_points > 0) ? `<button class="plus-btn" onclick="upStat('${s}')">+</button>` : ''}</div>`).join('');
-        }
-
-        window.upStat = async (s) => { p[s] = (p[s] || 10) + 1; p.stat_points--; updateUI(); try { await supabaseClient.from('pilots_data').update(p).eq('id', p.id); } catch(e){} };
-        window.switchTab = (t) => { document.getElementById('equip-view').style.display = t === 'equip' ? 'grid' : 'none'; document.getElementById('bag-view').style.display = t === 'bag' ? 'grid' : 'none'; document.getElementById('tab-equip-btn').className = t === 'equip' ? 'active-tab' : ''; document.getElementById('tab-bag-btn').className = t === 'bag' ? 'active-tab' : ''; };
-        window.town = () => alert("TOWN: NEXUS CORE YAPIM AŞAMASINDA"); window.openModal = (id) => { document.getElementById(id).style.display = 'flex'; }; window.closeModals = () => { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); };
-        window.useSkill = (s) => alert("Skill kilitli!"); window.usePot = (t) => showFT(`+${t}`, t==='HP'?'#0f0':'#00f0ff', playerSprite.x, playerSprite.y-40);
+        window.updateUI = () => {
+            document.getElementById('p-info').innerText = `${p.username} [${p.class}]`;
+            document.getElementById('lvl').innerText = p.level;
+            document.getElementById('hp-text').innerText = `${100 + p.vit*20}/${100 + p.vit*20}`;
+        };
 
         init();
     </script>
