@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nexus Intelligence - Pro Alpha v2.9</title>
+    <title>Nexus Intelligence - Combat Update v3.0</title>
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.9.0/nipplejs.min.js"></script>
     <style>
@@ -11,12 +11,7 @@
         body { background: #000; color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; overflow: hidden; touch-action: none; }
         #game-container { position: fixed; inset: 0; z-index: 1; }
         
-        /* SEÇİM EKRANI */
-        .screen { position: fixed; inset: 0; background: #000; z-index: 9000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .card { background: #111; border: 1px solid var(--neon-blue); padding: 15px; margin: 5px; width: 85%; border-radius: 12px; cursor: pointer; color: var(--neon-blue); font-weight: bold; text-align: center; }
-        .hidden { display: none !important; }
-
-        /* HUD & BARS */
+        /* HUD & UI */
         #hud { position: fixed; top: 10px; left: 10px; z-index: 2000; background: rgba(0,0,0,0.85); padding: 12px; border-radius: 10px; border: 1px solid var(--neon-blue); min-width: 185px; }
         .bar-container { width: 100%; height: 20px; background: #222; margin-bottom: 8px; border-radius: 5px; position: relative; overflow: hidden; border: 1px solid #444; }
         .bar-fill { height: 100%; transition: width 0.3s; width: 100%; }
@@ -24,24 +19,18 @@
         #mp-bar { background: linear-gradient(90deg, #00f0ff, #005f73); }
         .bar-text { position: absolute; width: 100%; text-align: center; font-size: 11px; font-weight: bold; line-height: 20px; color: #fff; text-shadow: 1px 1px #000; z-index: 10; top: 0; left: 0; }
 
-        /* MODALS (INV & STATS) */
-        .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; background: #0a0a0a; border: 2px solid var(--neon-blue); z-index: 5000; display: none; flex-direction: column; padding: 15px; border-radius: 12px; box-shadow: 0 0 30px #000; }
-        .inv-tabs { display: flex; gap: 5px; margin-bottom: 10px; }
-        .inv-tabs div { flex: 1; padding: 10px; background: #222; text-align: center; font-size: 10px; border-radius: 5px; cursor: pointer; border: 1px solid #444; }
-        .active-tab { background: var(--neon-blue) !important; color: #000 !important; font-weight: bold; }
-        .equip-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-        .eq-slot { height: 60px; background: #151515; border: 1px solid #333; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 8px; color: #555; }
-        .bag-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; max-height: 200px; overflow-y: auto; display: none; }
-        .bag-slot { height: 45px; background: #151515; border: 1px solid #222; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 8px; }
-
-        /* UI BUTONLARI */
+        /* ACTION BAR & JOYSTICK */
         #menu { position: fixed; top: 10px; right: 10px; z-index: 2000; display: flex; gap: 6px; }
-        .menu-btn { background: rgba(0,0,0,0.8); border: 1px solid var(--neon-blue); padding: 8px 12px; border-radius: 6px; color: #fff; font-size: 11px; font-weight: bold; cursor: pointer; }
+        .menu-btn { background: rgba(0,0,0,0.8); border: 1px solid var(--neon-blue); padding: 8px 12px; border-radius: 6px; color: #fff; font-size: 11px; font-weight: bold; }
         #joystick-zone { position: fixed; bottom: 40px; left: 30px; width: 120px; height: 120px; z-index: 1000; }
-        #action-bar { position: fixed; bottom: 20px; right: 20px; z-index: 1000; display: none; flex-direction: column; align-items: flex-end; gap: 10px; }
+        #action-bar { position: fixed; bottom: 20px; right: 20px; z-index: 1000; display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
         .skills-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
-        .skill-btn { width: 48px; height: 48px; background: rgba(17,17,17,0.9); border: 1px solid var(--neon-blue); border-radius: 8px; color: #fff; font-size: 10px; font-weight: bold; cursor: pointer; }
-        .attack-btn { width: 85px; height: 85px; background: rgba(255,0,60,0.1); border: 2px solid var(--neon-red); border-radius: 50%; color: var(--neon-red); font-weight: bold; cursor: pointer; }
+        .skill-btn { width: 50px; height: 50px; background: rgba(17,17,17,0.9); border: 1px solid var(--neon-blue); border-radius: 8px; color: #fff; font-size: 10px; font-weight: bold; }
+        .attack-btn { width: 90px; height: 90px; background: rgba(255,0,60,0.1); border: 2px solid var(--neon-red); border-radius: 50%; color: var(--neon-red); font-weight: bold; }
+
+        .screen { position: fixed; inset: 0; background: #000; z-index: 9000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .card { background: #111; border: 1px solid var(--neon-blue); padding: 15px; margin: 5px; width: 85%; border-radius: 12px; cursor: pointer; color: var(--neon-blue); font-weight: bold; text-align: center; }
+        .hidden { display: none !important; }
         .floating-text { position: absolute; font-weight: bold; pointer-events: none; animation: floatUp 0.8s forwards; z-index: 4000; }
         @keyframes floatUp { from { opacity:1; transform:translateY(0); } to { opacity:0; transform:translateY(-60px); } }
     </style>
@@ -63,59 +52,30 @@
         <div id="p-info" style="font-size:11px; font-weight:bold; color:var(--neon-blue); margin-bottom:8px;">---</div>
         <div class="bar-container"><div id="hp-bar" class="bar-fill"></div><div class="bar-text" id="hp-text">--- / ---</div></div>
         <div class="bar-container"><div id="mp-bar" class="bar-fill"></div><div class="bar-text" id="mp-text">--- / ---</div></div>
-        <div style="font-size:10px; color:#0f0;">LVL: <span id="lvl">1</span> | STAT: <span id="stat-pts">0</span></div>
-    </div>
-
-    <div id="menu" style="display:none;">
-        <button class="menu-btn" onclick="openModal('char-panel')">STATS</button>
-        <button class="menu-btn" onclick="openModal('inv-panel')">KASA</button>
-        <button class="menu-btn" onclick="town()">TOWN</button>
+        <div style="font-size:10px; color:#0f0;">LVL: <span id="lvl">1</span> | <span id="class-name">Job</span></div>
     </div>
 
     <div id="game-container"></div>
     <div id="joystick-zone"></div>
     
-    <div id="action-bar">
+    <div id="action-bar" style="display:none;">
         <div class="skills-grid">
-            <button class="skill-btn" onclick="useSkill(1)">S1</button>
-            <button class="skill-btn" onclick="useSkill(2)">S2</button>
-            <button class="skill-btn" onclick="useSkill(3)">S3</button>
-            <button class="skill-btn" onclick="usePot('HP')" style="border-color:red; color:red;">HP</button>
-            <button class="skill-btn" onclick="usePot('MP')" style="border-color:cyan; color:cyan;">MP</button>
+            <button class="skill-btn" onclick="useSkill('Swift')">SPEED</button>
+            <button class="skill-btn" onclick="useSkill('Heal')">HEAL</button>
+            <button class="skill-btn" style="opacity:0.3;">S3</button>
         </div>
         <button class="attack-btn" onclick="performAttack()">ATAK</button>
-    </div>
-
-    <div id="char-panel" class="modal">
-        <div style="display:flex; justify-content:space-between; margin-bottom:15px; border-bottom:1px solid #333; padding-bottom:10px;">
-            <span style="color:var(--neon-blue); font-weight:bold;">STATS</span>
-            <span onclick="closeModals()" style="color:red; cursor:pointer;">[X]</span>
-        </div>
-        <div id="stat-list"></div>
-    </div>
-
-    <div id="inv-panel" class="modal">
-        <div class="inv-tabs">
-            <div id="tab-eq" class="active-tab" onclick="switchInv('eq')">EKİPMAN (9)</div>
-            <div id="tab-bag" onclick="switchInv('bag')">ÇANTA (50)</div>
-            <div onclick="closeModals()" style="color:red; flex:0.2; text-align:center;">X</div>
-        </div>
-        <div id="eq-view" class="equip-grid">
-            <div class="eq-slot">KASK</div><div class="eq-slot">KOLYE</div><div class="eq-slot">SİLAH</div>
-            <div class="eq-slot">ZIRH</div><div class="eq-slot">KEMER</div><div class="eq-slot">KOLLUK</div>
-            <div class="eq-slot">YÜZÜK</div><div class="eq-slot">BOT</div><div class="eq-slot">YÜZÜK</div>
-        </div>
-        <div id="bag-view" class="bag-grid"></div>
     </div>
 
 <script>
     let p = { 
         username: 'Pilot', class: '', color: 0xFFFFFF, scale: 1.2, frame: 4, 
-        level: 1, exp: 0, str: 10, vit: 10, int: 10, dex: 10, stat_points: 5,
-        currentHP: 300, currentMP: 150, isAttacking: false
+        level: 1, str: 15, vit: 15, int: 10, dex: 10,
+        currentHP: 400, currentMP: 150, 
+        isAttacking: false, isSpeeding: false, moveSpeed: 210
     };
-    let monsters = [];
-    let gameScene, player, phaserStarted = false, aura;
+    let mobData = { hp: 500, maxHP: 500 };
+    let gameScene, player, mob, phaserStarted = false, joystickData = null;
 
     window.onload = () => setTimeout(() => { document.getElementById('loading-screen').classList.add('hidden'); document.getElementById('class-screen').classList.remove('hidden'); }, 1000);
 
@@ -124,35 +84,23 @@
     function startGame() {
         document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
         document.getElementById('hud').style.display = 'block';
-        document.getElementById('menu').style.display = 'flex';
         document.getElementById('action-bar').style.display = 'flex';
-        const bag = document.getElementById('bag-view');
-        for(let i=0; i<50; i++) { let s = document.createElement('div'); s.className = 'bag-slot'; s.innerText = "--"; bag.appendChild(s); }
         updateUI(); initPhaser();
     }
 
     function updateUI() {
         const maxHP = 100 + (p.vit * 20); const maxMP = 50 + (p.int * 10);
-        p.currentHP = Math.min(p.currentHP, maxHP); p.currentMP = Math.min(p.currentMP, maxMP);
-        document.getElementById('p-info').innerText = `${p.username.toUpperCase()} [${p.class}]`;
+        document.getElementById('p-info').innerText = `${p.username.toUpperCase()}`;
+        document.getElementById('class-name').innerText = p.class;
         document.getElementById('hp-text').innerText = `${Math.floor(p.currentHP)} / ${maxHP}`;
         document.getElementById('mp-text').innerText = `${Math.floor(p.currentMP)} / ${maxMP}`;
         document.getElementById('hp-bar').style.width = (p.currentHP / maxHP * 100) + "%";
         document.getElementById('mp-bar').style.width = (p.currentMP / maxMP * 100) + "%";
-        document.getElementById('lvl').innerText = p.level; document.getElementById('stat-pts').innerText = p.stat_points;
-        const list = document.getElementById('stat-list');
-        list.innerHTML = ['str','dex','int','vit'].map(s => `<div style="display:flex; justify-content:space-between; margin-bottom:5px;"><span>${s.toUpperCase()}: <b>${p[s]}</b></span>${p.stat_points > 0 ? `<button onclick="upStat('${s}')" style="background:#0f0; border:none; padding:2px 8px;">+</button>` : ''}</div>`).join('');
     }
-
-    window.openModal = (id) => document.getElementById(id).style.display = 'flex';
-    window.closeModals = () => document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
-    window.switchInv = (t) => { document.getElementById('eq-view').style.display = t === 'eq' ? 'grid' : 'none'; document.getElementById('bag-view').style.display = t === 'bag' ? 'grid' : 'none'; document.getElementById('tab-eq').className = t === 'eq' ? 'active-tab' : ''; document.getElementById('tab-bag').className = t === 'bag' ? 'active-tab' : ''; };
-    window.upStat = (s) => { if(p.stat_points > 0) { p[s]++; p.stat_points--; updateUI(); } };
-    window.town = () => { if(player) player.setPosition(0, 0); };
 
     function initPhaser() {
         if(phaserStarted) return; phaserStarted = true;
-        const config = { type: Phaser.AUTO, parent: 'game-container', width: window.innerWidth, height: window.innerHeight, physics: { default: 'arcade' }, scene: { preload: preload, create: create, update: update } };
+        const config = { type: Phaser.AUTO, parent: 'game-container', width: window.innerWidth, height: window.innerHeight, transparent: true, physics: { default: 'arcade' }, scene: { preload: preload, create: create, update: update } };
         new Phaser.Game(config);
     }
 
@@ -165,71 +113,80 @@
     function create() {
         gameScene = this;
         this.add.tileSprite(0, 0, 10000, 10000, 'grass').setOrigin(0.5);
-        this.cameras.main.setZoom(0.85);
+        this.cameras.main.setZoom(0.8);
 
         player = this.physics.add.sprite(0, 0, 'chars', p.frame).setScale(p.scale).setTint(p.color);
-        aura = this.add.circle(0, 0, 30, p.color, 0.2);
         this.cameras.main.startFollow(player);
 
-        createMob(300, 200, 'slime', 500);
-
-        const j = nipplejs.create({ zone: document.getElementById('joystick-zone'), mode: 'static', position: {left:'60px', bottom:'60px'}, color: '#00f0ff' });
-        j.on('move', (e, d) => {
-            // OKÇU VE MAGE KURALLARI: Saldırıyorsa durmalı.
-            if(p.isAttacking && (p.class === 'Archer' || p.class === 'Mage')) {
-                player.setVelocity(0);
-            } else {
-                player.setVelocity(d.vector.x * 220, -d.vector.y * 220);
-                if(d.vector.x !== 0) player.setFlipX(d.vector.x < 0);
-            }
-        });
-        j.on('end', () => player.setVelocity(0));
+        mob = this.physics.add.sprite(200, -100, 'slime').setScale(1.5);
+        
+        const manager = nipplejs.create({ zone: document.getElementById('joystick-zone'), mode: 'static', position: {left:'60px', bottom:'60px'}, color: '#00f0ff' });
+        manager.on('move', (e, d) => { joystickData = d; });
+        manager.on('end', () => { joystickData = null; if(player) player.setVelocity(0); });
     }
 
-    function update() { if(player) aura.setPosition(player.x, player.y); }
+    function update() {
+        if (!player) return;
 
-    function createMob(x, y, key, hp) {
-        let mob = gameScene.physics.add.sprite(x, y, key);
-        mob.setData({ hp: hp, maxHP: hp });
-        monsters.push(mob);
+        // --- HAREKET VE SLIDE KONTROLÜ ---
+        if (joystickData && joystickData.vector) {
+            // Eğer Okçu veya Mage ise ve Atak yapıyorsa DURMALI
+            if (p.isAttacking && (p.class === 'Archer' || p.class === 'Mage')) {
+                player.setVelocity(0);
+            } else {
+                // Diğer sınıflar (Warrior, Asas, Priest) yürürken vurabilir (Slide)
+                player.setVelocity(joystickData.vector.x * p.moveSpeed, -joystickData.vector.y * p.moveSpeed);
+                if (joystickData.vector.x !== 0) player.setFlipX(joystickData.vector.x < 0);
+            }
+        }
     }
 
     window.performAttack = () => {
-        if(p.isAttacking) return;
+        if (p.isAttacking) return;
         p.isAttacking = true;
 
-        monsters.forEach(mob => {
-            if(!mob.visible) return;
-            const dist = Phaser.Math.Distance.Between(player.x, player.y, mob.x, mob.y);
-            let range = (p.class === 'Archer' || p.class === 'Mage') ? 350 : 160;
-            
-            // OKÇU VE MAGE ATAK YAPINCA DURMALI
-            if(p.class === 'Archer' || p.class === 'Mage') player.setVelocity(0);
+        const dist = Phaser.Math.Distance.Between(player.x, player.y, mob.x, mob.y);
+        let range = (p.class === 'Archer' || p.class === 'Mage') ? 350 : 150;
 
-            if(dist < range) {
-                let dmg = (15 + p.str * 2);
-                let curHP = mob.getData('hp') - dmg;
-                mob.setData('hp', curHP);
-                showFT(`-${Math.floor(dmg)}`, "red", mob.x, mob.y);
-                if(curHP <= 0) {
-                    mob.setVisible(false); p.exp += 150; updateUI();
-                    gameScene.time.delayedCall(3000, () => {
-                        mob.setData('hp', mob.getData('maxHP')); mob.setVisible(true);
-                    });
-                }
+        if (mob.visible && dist < range) {
+            let dmg = 20 + (p.str * 1.5);
+            mobData.hp -= dmg;
+            showFT(`-${Math.floor(dmg)}`, "red", mob.x, mob.y);
+            gameScene.tweens.add({ targets: mob, alpha: 0.3, yoyo: true, duration: 100 });
+
+            if (mobData.hp <= 0) {
+                mob.setVisible(false);
+                showFT("ELIMINATED!", "gold", mob.x, mob.y);
+                setTimeout(() => { mobData.hp = 500; mob.setVisible(true); showFT("RESPAWN", "lime", mob.x, mob.y); }, 3000);
             }
-        });
+        }
 
-        // SLIDE / COMBO SÜRESİ (500ms sonra tekrar vurabilir)
+        // Combo Bekleme (Knight R-Combo Ritmi)
         setTimeout(() => { p.isAttacking = false; }, 500);
     };
 
-    window.usePot = (t) => {
-        const maxHP = 100 + (p.vit * 20); const maxMP = 50 + (p.int * 10);
-        if(t === 'HP') p.currentHP = Math.min(maxHP, p.currentHP + 60);
-        else p.currentMP = Math.min(maxMP, p.currentMP + 40);
-        showFT(`+${t}`, t === 'HP' ? 'red' : 'cyan', player.x, player.y - 60);
-        updateUI();
+    window.useSkill = (skill) => {
+        if (skill === 'Swift') {
+            if (p.isSpeeding) return;
+            p.isSpeeding = true;
+            const oldSpeed = p.moveSpeed;
+            p.moveSpeed *= 1.6; // %60 Hız artışı
+            player.setAlpha(0.6); // Hız efekti (Ghosting başlangıcı)
+            showFT("SPEED ACTIVE!", "#00f0ff", player.x, player.y - 60);
+            
+            setTimeout(() => {
+                p.moveSpeed = oldSpeed;
+                p.isSpeeding = false;
+                player.setAlpha(1);
+                showFT("SPEED EXPIRED", "#ff003c", player.x, player.y - 60);
+            }, 10000); // 10 saniye sürer
+        } 
+        else if (skill === 'Heal') {
+            const maxHP = 100 + (p.vit * 20);
+            p.currentHP = Math.min(maxHP, p.currentHP + 80);
+            showFT("+80 HEAL", "#0f0", player.x, player.y - 60);
+            updateUI();
+        }
     };
 
     function showFT(t, c, x, y) {
